@@ -8448,6 +8448,76 @@
           "kind": "InputValueDefinition",
           "description": {
             "kind": "StringValue",
+            "value": "Minimum number of repetitions",
+            "block": true
+          },
+          "name": {
+            "kind": "Name",
+            "value": "repeatableMin"
+          },
+          "type": {
+            "kind": "NamedType",
+            "name": {
+              "kind": "Name",
+              "value": "Int"
+            }
+          },
+          "defaultValue": {
+            "kind": "NullValue"
+          },
+          "directives": []
+        },
+        {
+          "kind": "InputValueDefinition",
+          "description": {
+            "kind": "StringValue",
+            "value": "Maximum number of repetitions",
+            "block": true
+          },
+          "name": {
+            "kind": "Name",
+            "value": "repeatableMax"
+          },
+          "type": {
+            "kind": "NamedType",
+            "name": {
+              "kind": "Name",
+              "value": "Int"
+            }
+          },
+          "defaultValue": {
+            "kind": "NullValue"
+          },
+          "directives": []
+        },
+        {
+          "kind": "InputValueDefinition",
+          "description": {
+            "kind": "StringValue",
+            "value": "Is section repeatable",
+            "block": true
+          },
+          "name": {
+            "kind": "Name",
+            "value": "repeatable"
+          },
+          "type": {
+            "kind": "NamedType",
+            "name": {
+              "kind": "Name",
+              "value": "Boolean"
+            }
+          },
+          "defaultValue": {
+            "kind": "BooleanValue",
+            "value": false
+          },
+          "directives": []
+        },
+        {
+          "kind": "InputValueDefinition",
+          "description": {
+            "kind": "StringValue",
             "value": "fields inside this section",
             "block": true
           },
@@ -31934,7 +32004,7 @@
           },
           "defaultValue": {
             "kind": "StringValue",
-            "value": "9322538c-732d-4f23-a778-8bb16e4a55ae",
+            "value": "defeb399-5460-4434-aeab-2388f3b8cf02",
             "block": false
           },
           "directives": []
@@ -67473,7 +67543,7 @@
           },
           "defaultValue": {
             "kind": "StringValue",
-            "value": "2025-08-24T18:05:10.114171",
+            "value": "2025-08-27T02:07:30.704344",
             "block": false
           },
           "directives": []

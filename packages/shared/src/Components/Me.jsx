@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createAsyncGraphQLAction, useFreshItem } from "@hrbolek/uoisfrontend-gql-shared";
-import { ArrowRightCircle, ArrowRightCircleFill, BoxArrowInLeft, BoxArrowRight, DoorOpen, HouseFill, PersonCircle } from "react-bootstrap-icons";
+import { BoxArrowInLeft, BoxArrowRight, HouseFill, PersonCircle } from "react-bootstrap-icons";
 
 import Navbar from "react-bootstrap/Navbar"
 import Nav from "react-bootstrap/Nav"

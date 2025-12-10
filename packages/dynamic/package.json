@@ -1,7 +1,10 @@
 {
-  "name": "@hrbolek/uoisfrontend-shared",
+  "name": "@hrbolek/uoisfrontend-dynamic",
   "version": "0.5.0",
-  "main": "src/index.js",
+  "main_": "src/index.js",
+  "main": "dist/index.cjs.js",
+
+  "module": "dist/index.es.js",  
 
   "exports": {
     ".": {
@@ -9,6 +12,7 @@
       "require": "./dist/index.cjs.js"
     }
   },
+
 
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -23,12 +27,9 @@
   "description": "",
 
   "dependencies": {
-    "bootstrap-icons": "1.11.3",
-    "react-bootstrap-icons": "^1.11.5",
-    "@hrbolek/uoisfrontend-gql-shared": "*"
-  },
-
-  "peerDependencies": {
-    "react": "^16.13.1"
+    "react-redux": "9.1.2",
+    "react-bootstrap": "^2.10.6",
+    "react-router-dom": "^7.0.2",
+    "@reduxjs/toolkit": "^2.4.0"
   }
 }

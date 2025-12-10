@@ -2,28 +2,28 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react"; // Enables React-specific optimizations and HMR
 import path from "path"; // Provides utilities for working with file and directory paths
 import compression from "vite-plugin-compression";
-import { VitePWA } from "vite-plugin-pwa";
+// import { VitePWA } from "vite-plugin-pwa";
 
-const PWA = () => {
-  return VitePWA({
-    manifest: {
-      name: "Your App",
-      short_name: "App",
-      icons: [
-        {
-          src: "/icon-192.png",
-          sizes: "192x192",
-          type: "image/png",
-        },
-        {
-          src: "/icon-512.png",
-          sizes: "512x512",
-          type: "image/png",
-        },
-      ],
-    },
-  })
-}
+// const PWA = () => {
+//   return VitePWA({
+//     manifest: {
+//       name: "Your App",
+//       short_name: "App",
+//       icons: [
+//         {
+//           src: "/icon-192.png",
+//           sizes: "192x192",
+//           type: "image/png",
+//         },
+//         {
+//           src: "/icon-512.png",
+//           sizes: "512x512",
+//           type: "image/png",
+//         },
+//       ],
+//     },
+//   })
+// }
 
 // Export the Vite configuration
 export default defineConfig({
@@ -41,14 +41,8 @@ export default defineConfig({
     preserveSymlinks: true, // Prevents breaking symbolic links, useful for monorepos
     alias: {
       // Define aliases for modules, resolving them to specific paths
-      "@hrbolek/uoisfrontend-shared": path.resolve(__dirname, "../../packages/shared/src"),
-      "@hrbolek/uoisfrontend-gql-shared": path.resolve(__dirname, "../../packages/gql_shared/src"),
-      "@hrbolek/uoisfrontend-ug": path.resolve(__dirname, "../../packages/ug/src"),
-      "@hrbolek/uoisfrontend-granting": path.resolve(__dirname, "../../packages/granting/src"),
-      "@hrbolek/uoisfrontend-admissions": path.resolve(__dirname, "../../packages/admissions/src"),
-      "@hrbolek/uoisfrontend-requests": path.resolve(__dirname, "../../packages/requests/src"),
+      "@hrbolek/uoisfrontend-dynamic": path.resolve(__dirname, "../../packages/dynamic/src"),
       
-      "@hrbolek/uoisfrontend-zp": path.resolve(__dirname, "../../packages/z_pack/src"),
     },
   },
 
@@ -62,6 +56,7 @@ export default defineConfig({
     ],
     exclude: [
       // Exclude specific libraries or modules from optimization
+      "@hrbolek/uoisfrontend-dynamic",
       "@hrbolek/uoisfrontend-shared",
       "@hrbolek/uoisfrontend-gql-shared",
       "@hrbolek/uoisfrontend-ug",
@@ -82,6 +77,7 @@ export default defineConfig({
       // Specify paths to watch for changes
       ignored: [
         // Ensure certain packages are not ignored during file watching
+        '!../../packages/dynamic/**',
         '!../../packages/shared/**',
         '!../../packages/gql-shared/**',
         '!../../packages/ug/**',
