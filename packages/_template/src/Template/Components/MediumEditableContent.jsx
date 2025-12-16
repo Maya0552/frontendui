@@ -26,8 +26,10 @@ import { Input } from "@hrbolek/uoisfrontend-shared"
 export const MediumEditableContent = ({ item, onChange=(e)=>null, onBlur=(e)=>null, children}) => {
     return (
         <>           
-            <Input id={"name"} label={"Název"} className="form-control" defaultValue={item?.name|| "Název"} onChange={onChange} onBlur={onBlur} />
-            <Input id={"name_en"} label={"Anglický název"} className="form-control" defaultValue={item?.name_en|| "Anglický název"} onChange={onChange} onBlur={onBlur} />
+        {/* defaultValue={item?.name|| "Název"}  */}
+            <Input id={"name"} label={"Jméno"} className="form-control" value={item?.name|| "Název"} onChange={onChange} onBlur={onBlur} />
+            <Input id={"surname"} label={"Příjmení"} className="form-control" value={item?.surname|| "Název"} onChange={onChange} onBlur={onBlur} />
+            <Input id={"name_en"} label={"Anglický název"} className="form-control" value={item?.name_en|| "Anglický název"} onChange={onChange} onBlur={onBlur} />
             {children}
         </>
     )

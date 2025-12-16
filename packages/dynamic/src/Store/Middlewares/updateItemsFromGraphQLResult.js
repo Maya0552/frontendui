@@ -43,19 +43,8 @@ const collectEntities = (node, acc = []) => {
     return acc;
 };
 
-/**
- * Z GraphQL response (raw {data, errors} nebo přímo { ...data }) vytáhne
- * všechny entitní objekty (s `id` a `__typename`) a:
- *  - pro každý `dispatch(ItemActions.item_add(entity))`
- *  - předá původní `result` dál do chainu
- *
- * Použití:
- *   createAsyncGraphQLAction2(queryStr, updateItemsFromGraphQLResult)
- *
- * @param {any} result - GraphQL výsledek (buď { data, errors } nebo jen { ...data })
- * @returns {(dispatch: Function, getState: Function, next: Function) => Promise<any>}
- */
-export const updateItemsFromGraphQLResult = (result) => async (
+
+export const ItemsFromGraphQLResultFactory = (ItemAction=ItemActions.item_update) => (result) => async (
     dispatch,
     getState,
     next
@@ -72,7 +61,7 @@ export const updateItemsFromGraphQLResult = (result) => async (
             entities = collectEntities(dataRoot, []);
         } catch (err) {
             // Tady máš tvrdý assert na __typename – můžeš případně logovat nebo dispatchnout error akci
-            console.error("updateItemsFromGraphQLResult: normalization failed", err);
+            console.error("ItemsFromGraphQLResult: normalization failed", err);
             // Volitelně:
             // dispatch({ type: "ITEMS_NORMALIZATION_ERROR", payload: String(err) });
             throw err;
@@ -80,10 +69,28 @@ export const updateItemsFromGraphQLResult = (result) => async (
 
         // Normalizace do ItemSlice – každá entita jde přes item_add (upsert)
         for (const entity of entities) {
-            dispatch(ItemActions.item_add(entity));
+            // dispatch(ItemActions.item_add(entity));
+            dispatch(ItemAction(entity));
+            
         }
     }
 
     // Předáme výsledek dál v chainu (např. do dalšího middleware nebo volajícího)
     return next(result);
 };
+
+/**
+ * Z GraphQL response (raw {data, errors} nebo přímo { ...data }) vytáhne
+ * všechny entitní objekty (s `id` a `__typename`) a:
+ *  - pro každý `dispatch(ItemActions.item_add(entity))`
+ *  - předá původní `result` dál do chainu
+ *
+ * Použití:
+ *   createAsyncGraphQLAction2(queryStr, updateItemsFromGraphQLResult)
+ *
+ * @param {any} result - GraphQL výsledek (buď { data, errors } nebo jen { ...data })
+ * @returns {(dispatch: Function, getState: Function, next: Function) => Promise<any>}
+ */
+export const updateItemsFromGraphQLResult = ItemsFromGraphQLResultFactory();
+
+export const addItemsFromGraphQLResult = ItemsFromGraphQLResultFactory(ItemActions.item_add);

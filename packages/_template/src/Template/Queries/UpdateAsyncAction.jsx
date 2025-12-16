@@ -1,7 +1,7 @@
 import { createQueryStrLazy } from "@hrbolek/uoisfrontend-gql-shared";
 import { LargeFragment } from "./Fragments";
 import { createAsyncGraphQLAction2 } from "../../../../dynamic/src/Core/createAsyncGraphQLAction2";
-import { reduceToFirstEntity } from "../../../../dynamic/src/Store";
+import { reduceToFirstEntity, updateItemsFromGraphQLResult } from "../../../../dynamic/src/Store";
 
 const UpdateMutationStr = `
 mutation userUpdate($id: UUID!, $lastchange: DateTime!, $name: String, $surname: String, $email: String, $valid: Boolean) {
@@ -72,4 +72,5 @@ fragment Error on UserGQLModelUpdateError {
 `
 
 const UpdateMutation = createQueryStrLazy(`${UpdateMutationStr}`, LargeFragment)
-export const UpdateAsyncAction = createAsyncGraphQLAction2(UpdateMutation, reduceToFirstEntity)
+export const UpdateAsyncAction = createAsyncGraphQLAction2(UpdateMutation, 
+    updateItemsFromGraphQLResult, reduceToFirstEntity)

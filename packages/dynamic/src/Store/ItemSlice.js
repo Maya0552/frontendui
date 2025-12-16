@@ -106,6 +106,10 @@ export const ItemSlice = createSlice({
                 _version: (prev._version ?? 0) + 1,
             };
 
+            // itemsAdapter.upsertOne(state, {
+            //     id,
+            //     changes,
+            // });
             itemsAdapter.updateOne(state, {
                 id,
                 changes,

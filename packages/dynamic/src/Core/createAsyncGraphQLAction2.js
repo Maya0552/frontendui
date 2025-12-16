@@ -1,4 +1,4 @@
-import { updateItemsFromGraphQLResult } from "../Store/Middlewares/updateItemsFromGraphQLResult";
+import { addItemsFromGraphQLResult, updateItemsFromGraphQLResult } from "../Store/Middlewares/updateItemsFromGraphQLResult";
 
 // export const createFetchQuery = (graphQLQuery, defaultParams = {}) => {
 //     return async (variables) => {
@@ -8,7 +8,7 @@ import { updateItemsFromGraphQLResult } from "../Store/Middlewares/updateItemsFr
 // };
 
 
-export const createAsyncGraphQLAction2 = (graphQLQuery, params=updateItemsFromGraphQLResult, ...middlewares) => {
+export const createAsyncGraphQLAction2 = (graphQLQuery, params=addItemsFromGraphQLResult, ...middlewares) => {
     let graphQLQueryStr = ""
     if (typeof graphQLQuery === "function") {
         graphQLQueryStr = graphQLQuery?.__metadata?.queryStr

@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Label } from './Label'
+import { useMemo } from 'react'
+import { useState } from 'react'
 
 export const Input_ = ({ label, ariaHidden = false, ...props }) => {
     const { id, value, defaultValue, onChange = (e) => null, type } = props
@@ -97,7 +99,7 @@ export const Input__ = ({ label, ariaHidden = false, children, ...props }) => {
 };
 
 
-export const Input = ({ label, ariaHidden = false, children, ...props }) => {
+export const Input2 = ({ label, ariaHidden = false, children, ...props }) => {
     const {
         id,
         value,
@@ -155,6 +157,90 @@ export const Input = ({ label, ariaHidden = false, children, ...props }) => {
     return (
         <Label title={label}>
             {inputElement}
+            {children}
+        </Label>
+    );
+};
+
+
+export const Input = ({ label, ariaHidden = false, children, ...props }) => {
+    const {
+        id,
+        value,
+        defaultValue,
+        onChange = () => null,
+        onBlur = () => null,
+        type="text",
+        ...rest
+    } = props;
+
+    const isControlled = value !== undefined; // klíčové
+    const touchedRef = useRef(false);
+    const [value_, setValue_] = useState(value)
+    useEffect(() => setValue_(value), [value])
+    const coerceValue = (val) => {
+        if (type === "number") {
+            if (val === "" || val == null) return "";
+            const num = Number(val);
+            return Number.isNaN(num) ? "" : num;
+        }
+        return val ?? "";
+    };
+
+    // reset "touched", když se změní hodnota zvenku (typicky reload / cancel / confirm)
+    const externalValueKey = useMemo(
+        () => (isControlled ? coerceValue(value) : undefined),
+        [isControlled, value, type]
+    );
+
+    useEffect(() => {
+        if (isControlled) touchedRef.current = false;
+    }, [externalValueKey, isControlled]);
+
+    const emit = (cb) => (e) => {
+        const coercedValue = coerceValue(e.target.value);
+        cb({ target: { id, value: coercedValue } });
+    };
+
+    const handleChange = (e) => {
+        touchedRef.current = true;
+        const value = e?.target?.value
+        setValue_(value)
+        emit(onChange)(e);
+    };
+
+    const handleBlur = (e) => {
+        if (!touchedRef.current) return;
+        emit(onBlur)(e);
+    };
+
+    if (ariaHidden) return null;
+
+    const inputProps = {
+        id,
+        type,
+        onChange: handleChange,
+        onBlur: handleBlur,
+        ...rest,
+    };
+
+    // Controlled vs uncontrolled:
+    if (isControlled) {
+        inputProps.value = coerceValue(value_);
+    } else {
+        inputProps.defaultValue = coerceValue(defaultValue);
+    }
+    // console.log("Input default", isControlled, defaultValue, inputProps)
+    const inputElement = <input {...inputProps} />;
+
+    if (!label) return inputElement;
+
+    return (
+        <Label title={label}>
+            {inputElement}
+            {/* value_: {value_} <br />
+            value: {value}  */}
+
             {children}
         </Label>
     );

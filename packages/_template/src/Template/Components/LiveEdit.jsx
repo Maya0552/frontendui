@@ -90,13 +90,13 @@ const LiveEditWrapper = ({ item, children }) => {
 export const LiveEdit = ({ item, children }) => {
     const { run , error, loading, entity, data, onChange: contextOnChange, onBlur: contextOnBlur } = useGQLEntityContext()
     
-    const localOnMutationEvent = useCallback((mutationHandler, notifyHandler) => async (e) => {
-        const newItem = { ...item, [e.target.id]: e.target.value }
-        const newEvent = { target: { value: newItem } }
+    // const localOnMutationEvent = useCallback((mutationHandler, notifyHandler) => async (e) => {
+    //     const newItem = { ...item, [e.target.id]: e.target.value }
+    //     const newEvent = { target: { value: newItem } }
         
-        await notifyHandler(newEvent)
-        return await mutationHandler(e)
-    })
+    //     await notifyHandler(newEvent)
+    //     return await mutationHandler(e)
+    // })
 
     const {
         draft,
@@ -105,7 +105,10 @@ export const LiveEdit = ({ item, children }) => {
         onBlur,
         onCancel,
         onConfirm,
-    } = useEditAction(UpdateAsyncAction, item, {mode: "live", onCommit: contextOnChange})
+    } = useEditAction(UpdateAsyncAction, item, {
+        mode: "live", 
+        // onCommit: contextOnChange
+    })
 
     // const handleConfirm = useCallback(async () => {
     //     const result = await onConfirm();
