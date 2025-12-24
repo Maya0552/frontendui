@@ -1,10 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useGQLEntityContext } from "../../Base/Helpers/GQLEntityProvider";
-import { PermissionGate, usePermissionRoles } from "../../../../dynamic/src/Hooks/useRoles"
+import { PermissionGate } from "../../../../dynamic/src/Hooks/useRoles"
 import { useEditAction } from "../../../../dynamic/src/Hooks/useEditAction";
-import { LinkURI, MediumEditableContent } from "../Components";
-import { Row } from "../../Base/Components/Row";
-import { Col } from "../../Base/Components/Col";
+import { LinkURI, MediumContent } from "../Components";
 import { DeleteAsyncAction } from "../Queries";
 import { AsyncStateIndicator } from "../../Base/Helpers/AsyncStateIndicator";
 import { useState } from "react";
@@ -18,14 +16,22 @@ import { makeMutationURI } from "./helpers";
 
 export const DeleteURI = makeMutationURI(LinkURI, "delete", { withId: true });
 
-export const DeleteLink = ({ item, preserveHash = true, preserveSearch = true, ...props }) => {
+export const DeleteLink = ({ 
+    item, 
+    preserveHash = true, 
+    preserveSearch = true, 
+    oneOfRoles=["superadmin"],
+    mode="absolute",
+    uriPattern=DeleteURI,
+    ...props 
+}) => {
     const to = useMemo(() => {
         const id = item?.id ?? "";
-        return DeleteURI.replace(":id", String(id));
-    }, [item?.id]);
+        return uriPattern.replace(":id", String(id));
+    }, [uriPattern, item?.id]);
 
     return (
-        <PermissionGate oneOfRoles={["superadmin"]} mode={"absolute"}>
+        <PermissionGate oneOfRoles={oneOfRoles} mode={mode}>
             <ProxyLink
                 to={to}
                 preserveHash={preserveHash}
@@ -36,69 +42,16 @@ export const DeleteLink = ({ item, preserveHash = true, preserveSearch = true, .
     );
 };
 
-export const DeleteBody = ({ children, mutationAsyncAction = DeleteAsyncAction }) => {
-    const navigate = useNavigate();
-    const { item } = useGQLEntityContext()
+const DefaultContent = MediumContent
 
-    const {
-        draft,
-        dirty,
-        loading: saving,
-        error: savingError,
-        onChange,
-        onBlur,
-        commitNow
-    } = useEditAction(mutationAsyncAction, item, {
-        mode: "confirm",
-        // onCommit: contextOnChange
-    })
-
-    const handleConfirm = async () => {
-        const result = await commitNow(draft)
-        console.log("handleConfirm", result)
-        if (result && navigate) {
-            navigate(VectorItemsURI, { replace: true })
-        }
-    }
-
-    const handleCancel = () => {
-        navigate(-1)
-    }
-
-    if (!item) return null
-
-    return (
-        <PermissionGate mode="absolute" oneOfRoles={["superadmin"]}>
-            <Row>
-                <Col></Col>
-                <Col>
-                    <MediumEditableContent item={draft} onChange={onChange} onBlur={onBlur} >
-                        <AsyncStateIndicator error={savingError} loading={saving} text={"Ukládám"} />
-                        {children}
-                        <button
-                            className="btn btn-warning form-control"
-                            onClick={handleCancel}
-                            disabled={saving}
-                        >
-                            Zrušit
-                        </button>
-                        <button
-                            className="btn btn-primary form-control"
-                            onClick={handleConfirm}
-                            disabled={saving}
-                        >
-                            Smazat
-                        </button>
-
-                    </MediumEditableContent>
-                </Col>
-                <Col></Col>
-            </Row>
-        </PermissionGate>
-    )
-}
-
-export const DeleteButton = ({ children, ...props }) => {
+export const DeleteButton = ({ 
+    children, 
+    mutationAsyncAction = DeleteAsyncAction, 
+    oneOfRoles=["superadmin"],
+    mode="absolute",
+    DefaultContent: DefaultContent_ = DefaultContent,
+    ...props 
+}) => {
     // const { can, roleNames } = useRoles(item, ["superadmin"])
     const { follow } = useLink({ to: VectorItemsURI })
     const [visible, setVisible] = useState(false)
@@ -112,9 +65,16 @@ export const DeleteButton = ({ children, ...props }) => {
     }
 
     return (
-        <PermissionGate oneOfRoles={["superadmin"]} mode={"absolute"}>
+        <PermissionGate oneOfRoles={oneOfRoles} mode={mode}>
             <button {...props} onClick={togleVisible}>{children || "Odstranit"}</button>
-            {visible && <DeleteDialog onOk={handleOkClick} onCancel={handleCancelClick} />}
+            {visible && (
+                <DeleteDialog 
+                    onOk={handleOkClick} 
+                    onCancel={handleCancelClick} 
+                    mutationAsyncAction={mutationAsyncAction}
+                    DefaultContent={DefaultContent_}
+                />
+            )}
             {/* {JSON.stringify(visible)} */}
         </PermissionGate>
     )
@@ -128,41 +88,95 @@ export const DeleteDialog = ({
     cancellabel = "Zrušit",
     onOk: handleOk = dummyFunc,
     onCancel: handleCancel = dummyFunc,
+    mutationAsyncAction = DeleteAsyncAction,
+    DefaultContent: DefaultContent_ = DefaultContent
+
 }) => {
     const {
         item,
         // onChange: contextOnChange 
     } = useGQLEntityContext()
     const {
-        draft,
-        onCancel,
         commitNow,
         error,
         loading: saving
-    } = useEditAction(DeleteAsyncAction, item, { mode: "confirm" })
+    } = useEditAction(mutationAsyncAction, item, { mode: "confirm" })
 
     const handleConfirm = useCallback(async () => {
-        const result = await commitNow(draft);
+        const result = await commitNow(item);
         handleOk(result);
 
         return result;
-    }, [commitNow, handleOk, draft]);
-
-    const handleCancel_ = useCallback(async () => {
-        onCancel();
-        handleCancel();
-    }, [onCancel, handleCancel]);
+    }, [commitNow, handleOk, item]);
 
     return (
         <Dialog
             title={title}
             oklabel={oklabel}
             cancellabel={cancellabel}
-            onCancel={handleCancel_}
+            onCancel={handleCancel}
             onOk={handleConfirm}
         >
             <AsyncStateIndicator error={error} loading={saving} text={"Odstraňuji"} />
-            {/* <MediumEditableContent item={item} onChange={contextOnChange} onBlur={contextOnChange} /> */}
+            <DefaultContent_ item={item} />
         </Dialog>
+    )
+}
+
+export const DeleteBody = ({ 
+    children, 
+    mutationAsyncAction = DeleteAsyncAction,
+    DefaultContent: DefaultContent_=DefaultContent,
+    oneOfRoles=["superadmin"],
+    mode="absolute"
+}) => {
+    const navigate = useNavigate();
+    const { item } = useGQLEntityContext()
+
+    const {
+        loading: saving,
+        error: savingError,
+        commitNow
+    } = useEditAction(mutationAsyncAction, item, {
+        mode: "confirm",
+        // onCommit: contextOnChange
+    })
+
+    const handleConfirm = useCallback(async () => {
+        const result = await commitNow(item)
+        console.log("handleConfirm", result)
+        if (result && navigate) {
+            navigate(VectorItemsURI, { replace: true })
+        }
+    }, [navigate, commitNow])
+
+    const handleCancel = () => {
+        navigate(-1)
+    }
+
+    if (!item) return null
+
+    return (
+        <PermissionGate oneOfRoles={oneOfRoles} mode={mode}>
+            <DefaultContent_ item={item} >
+                <AsyncStateIndicator error={savingError} loading={saving} text={"Odstraňuji"} />
+                {children}
+                <button
+                    className="btn btn-warning form-control"
+                    onClick={handleCancel}
+                    disabled={saving}
+                >
+                    Zrušit
+                </button>
+                <button
+                    className="btn btn-primary form-control"
+                    onClick={handleConfirm}
+                    disabled={saving}
+                >
+                    Smazat
+                </button>
+
+            </DefaultContent_>
+        </PermissionGate>
     )
 }

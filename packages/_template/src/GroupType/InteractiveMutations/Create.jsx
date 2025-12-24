@@ -12,50 +12,64 @@ import { makeMutationURI } from "./helpers"
 
 export const CreateURI = makeMutationURI(LinkURI, "create", { withId: false });
 
-export const CreateLink = (props) => (
-    <PermissionGate oneOfRoles={["superadmin"]} mode={"absolute"}>
-        <ProxyLink to={CreateURI} {...props}>Create</ProxyLink>
+export const CreateLink = ({
+    oneOfRoles=["superadmin"],
+    mode="absolute",
+    children,
+    ...props
+}) => (
+    <PermissionGate oneOfRoles={oneOfRoles} mode={mode}>
+        <ProxyLink to={CreateURI} {...props}>{children || "Vytvořit"}</ProxyLink>
     </PermissionGate>
 );
 
-export const CreateButton = ({ children, ...props }) => {
+const DefaultContent = MediumEditableContent
+export const CreateButton = ({ 
+    children, 
+    mutationAsyncAction=InsertAsyncAction,
+    oneOfRoles=["superadmin"],
+    mode="absolute",
+    DefaultContent: DefaultContent_ = DefaultContent,
+
+    ...props 
+}) => {
     const [visible, setVisible] = useState(false)
     const handleClick = () => {
         setVisible(prev => !prev)
     }
 
     return (
-        <PermissionGate oneOfRoles={["superadmin"]} mode={"absolute"} >
+        <PermissionGate oneOfRoles={oneOfRoles} mode={mode}>
             <button {...props} onClick={handleClick}>{children || "Vytvořit nový"}</button>
             {visible && (
                 <CreateDialog
                     onOk={handleClick}
                     onCancel={handleClick}
+                    mutationAsyncAction={mutationAsyncAction}
+                    DefaultContent={DefaultContent_}
                 />
             )}
         </PermissionGate>
     )
 }
 
+const dummyFunc = () => null
 export const CreateDialog = ({
     title = "Nový typ",
     oklabel = "Ok",
     cancellabel = "Zrušit",
+    onOk: handleOk = dummyFunc,
+    onCancel: handleCancel = dummyFunc,
     mutationAsyncAction = InsertAsyncAction,
-    onOk,
-    onCancel,
+    DefaultContent: DefaultContent_ = DefaultContent,
     children,
     ...props
 }) => {
     const session = useCreateSession({
         readUri: ReadItemURI,
         mutationAsyncAction,
-        onAfterConfirm: async (result) => {
-            if (onOk) onOk(result);
-        },
-        onAfterCancel: async () => {
-            if (onCancel) onCancel();
-        },
+        onAfterConfirm: handleOk,
+        onAfterCancel: handleCancel
     });
 
     return (
@@ -68,9 +82,9 @@ export const CreateDialog = ({
             {...props}
         >
             <AsyncStateIndicator error={session.error} loading={session.saving} />
-            <MediumEditableContent item={session.draft} onChange={session.onChange} onBlur={session.onBlur}>
+            <DefaultContent_ item={session.draft} onChange={session.onChange} onBlur={session.onBlur}>
                 {children}
-            </MediumEditableContent>
+            </DefaultContent_>
         </Dialog>
     );
 };
@@ -80,6 +94,9 @@ export const CreateBody = ({
     mutationAsyncAction = InsertAsyncAction,
     onOk,
     onCancel,
+    DefaultContent: DefaultContent_=DefaultContent,
+    oneOfRoles=["superadmin"],
+    mode="absolute",    
     ...props
 }) => {
     const session = useCreateSession({
@@ -96,31 +113,33 @@ export const CreateBody = ({
     });
 
     return (
-        <MediumEditableContent
-            item={session.draft}
-            onChange={session.onChange}
-            onBlur={session.onBlur}
-            {...props}
-        >
-            <AsyncStateIndicator error={session.error} loading={session.saving} />
-            {children}
-
-            <button
-                className="btn btn-warning form-control"
-                onClick={session.handleCancel}
-            // disabled={!session.dirty || session.saving}
+        <PermissionGate oneOfRoles={oneOfRoles} mode={mode}>
+            <DefaultContent_
+                item={session.draft}
+                onChange={session.onChange}
+                onBlur={session.onBlur}
+                {...props}
             >
-                Zrušit změny
-            </button>
+                <AsyncStateIndicator error={session.error} loading={session.saving} />
+                {children}
 
-            <button
-                className="btn btn-primary form-control"
-                onClick={session.handleConfirm}
-            // disabled={!session.dirty || session.saving}
-            >
-                Uložit změny
-            </button>
-        </MediumEditableContent>
+                <button
+                    className="btn btn-warning form-control"
+                    onClick={session.handleCancel}
+                // disabled={!session.dirty || session.saving}
+                >
+                    Zrušit změny
+                </button>
+
+                <button
+                    className="btn btn-primary form-control"
+                    onClick={session.handleConfirm}
+                // disabled={!session.dirty || session.saving}
+                >
+                    Uložit změny
+                </button>
+            </DefaultContent_>
+        </PermissionGate>
     );
 };
 

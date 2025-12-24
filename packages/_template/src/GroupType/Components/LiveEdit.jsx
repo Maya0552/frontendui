@@ -85,22 +85,27 @@ import { useEditAction } from "../../../../dynamic/src/Hooks/useEditAction";
 // }
 
 
-export const LiveEdit = ({ item, children, asyncMutationAction=UpdateAsyncAction }) => {
+export const LiveEdit = ({ 
+    item, 
+    children, 
+    mutationAsyncAction=UpdateAsyncAction,
+    MediumEditableContent: MediumEditableContent_=MediumEditableContent
+}) => {
     // const { run , error, loading, entity, data, onChange: contextOnChange, onBlur: contextOnBlur } = useGQLEntityContext()
     const {
         loading: saving,
         onChange: handleChange, 
         onBlur: handleBlur,
-    } = useEditAction(asyncMutationAction, item, {
+    } = useEditAction(mutationAsyncAction, item, {
         mode: "live", 
         // onCommit: contextOnChange
     })
 
     return (        
-        <MediumEditableContent item={item} onChange={handleChange} onBlur={handleBlur} >
+        <MediumEditableContent_ item={item} onChange={handleChange} onBlur={handleBlur} >
             {saving && <LoadingSpinner/>}
             {children}
-        </MediumEditableContent>
+        </MediumEditableContent_>
         
     )
 }

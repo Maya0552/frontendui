@@ -6,6 +6,7 @@ fragment Link on GroupTypeGQLModel {
   id
   lastchange
   name
+  nameEn
     mastertype {
       __typename
       id

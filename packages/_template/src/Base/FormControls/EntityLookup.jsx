@@ -6,6 +6,7 @@ import { useEffect } from "react"
 import { useState } from "react"
 import { Label } from "./Label"
 import { Input } from "./Input"
+import { AsyncStateIndicator } from "../Helpers/AsyncStateIndicator"
 
 /**
  * Vyhledávací komponenta pro výběr entity (lookup/autocomplete).
@@ -120,8 +121,7 @@ export const EntityLookup = ({
     // const inputValue = sureValue?.fullname || sureValue?.name
     return (
         <>
-            {loading && <LoadingSpinner text="Hledám" />}
-            {error && <ErrorHandler errors={error} />}
+            <AsyncStateIndicator loading={loading} error={error} text={"Hledám"} />
             {/* {JSON.stringify(value)} */}
             <Label title={label}>
                 <Input {...props} 

@@ -13,14 +13,22 @@ import { makeMutationURI } from "./helpers"
 
 export const UpdateURI = makeMutationURI(LinkURI, "edit", { withId: true });
 
-export const UpdateLink = ({ item, preserveHash = true, preserveSearch = true, ...props }) => {
+export const UpdateLink = ({ 
+    item, 
+    preserveHash = true, 
+    preserveSearch = true, 
+    oneOfRoles=["superadmin"],
+    mode="absolute",
+    uriPattern=UpdateURI,
+    ...props 
+}) => {
     const to = useMemo(() => {
         const id = item?.id ?? "";
-        return UpdateURI.replace(":id", String(id));
-    }, [item?.id]);
+        return uriPattern.replace(":id", String(id));
+    }, [uriPattern, item?.id]);
 
     return (
-        <PermissionGate oneOfRoles={["superadmin"]} mode={"absolute"}>
+        <PermissionGate oneOfRoles={oneOfRoles} mode={mode}>
             <ProxyLink
                 to={to}
                 preserveHash={preserveHash}
@@ -31,14 +39,30 @@ export const UpdateLink = ({ item, preserveHash = true, preserveSearch = true, .
     );
 };
 
-export const UpdateButton = ({ children, ...props }) => {
+const DefaultContent = MediumEditableContent
+
+export const UpdateButton = ({ 
+    children, 
+    mutationAsyncAction = UpdateAsyncAction, 
+    oneOfRoles=["superadmin"],
+    mode="absolute",
+    DefaultContent: DefaultContent_ = DefaultContent,
+    ...props 
+}) => {
     const [visible, setVisible] = useState(false)
     const toggle = () => setVisible(v => !v);
     const hide = () => setVisible(v => false)
     return (
-        <PermissionGate oneOfRoles={["superadmin"]} mode={"absolute"}>
+        <PermissionGate oneOfRoles={oneOfRoles} mode={mode}>
             <button {...props} onClick={toggle}>{children || "Editovat"}</button>
-            {visible && <UpdateDialog onOk={hide} onCancel={hide} />}
+            {visible && (
+                <UpdateDialog 
+                    onOk={hide} 
+                    onCancel={hide} 
+                    mutationAsyncAction={mutationAsyncAction}
+                    DefaultContent={DefaultContent_}
+                />
+            )}
         </PermissionGate>
     )
 }
@@ -50,6 +74,10 @@ export const UpdateDialog = ({
     cancellabel = "Zrušit",
     onOk: handleOk = dummyFunc,
     onCancel: handleCancel = dummyFunc,
+    mutationAsyncAction = UpdateAsyncAction,
+    DefaultContent: DefaultContent_ = DefaultContent,
+    children,
+    ...props
 }) => {
     const { item, onChange: contextOnChange } = useGQLEntityContext()
     const {
@@ -60,7 +88,7 @@ export const UpdateDialog = ({
         onConfirm,
         error,
         loading: saving
-    } = useEditAction(UpdateAsyncAction, item, { mode: "confirm" })
+    } = useEditAction(mutationAsyncAction, item, { mode: "confirm" })
 
     const handleCancel_ = useCallback(async () => {
         onCancel()
@@ -68,10 +96,10 @@ export const UpdateDialog = ({
     }, [onCancel, handleCancel])
 
     const handleConfirm = useCallback(async () => {
-        const result = await onConfirm();
+        const result = await onConfirm(draft);
         // console.log("ConfirmEdit handleConfirm result", result, "draft", draft)
         if (result) {
-            const event = { target: { value: result } };
+            const event = { target: { value: draft } };
             // důležité: použij params z kontextu (provider si je drží jako "poslední vars")
             await contextOnChange(event);
         }
@@ -86,24 +114,38 @@ export const UpdateDialog = ({
             cancellabel={cancellabel}
             onCancel={handleCancel_}
             onOk={handleConfirm}
+            {...props}
         >
             <AsyncStateIndicator error={error} loading={saving} text={"Ukládám"} />
-            <MediumEditableContent item={item} onChange={onChange} onBlur={onBlur} />
+            <DefaultContent_ item={item} onChange={onChange} onBlur={onBlur}>
+                {children}
+            </DefaultContent_>
+
         </Dialog>
     )
 }
 
 
-export const UpdateBody = ({ mutationAsyncAction = UpdateAsyncAction }) => {
+export const UpdateBody = ({ 
+    children,
+    mutationAsyncAction = UpdateAsyncAction,
+    DefaultContent: DefaultContent_=DefaultContent,
+    oneOfRoles=["superadmin"],
+    mode="absolute"
+}) => {
     const { item } = useGQLEntityContext()
     // const { can, roleNames } = useRolePermission(item, ["administrátor"])
 
     if (!item) return null
 
     return (
-
-        <PermissionGate oneOfRoles={["superadmin"]} mode={"absolute"}>
-            <LiveEdit item={item} mutationAsyncAction={mutationAsyncAction} />
+        <PermissionGate oneOfRoles={oneOfRoles} mode={mode}>
+            <LiveEdit 
+                item={item} 
+                mutationAsyncAction={mutationAsyncAction} 
+                DefaultContent={DefaultContent_}
+            />
+            {children}
         </PermissionGate>
 
     )
@@ -145,7 +187,7 @@ export const UpdateItemConfirm = ({ onDone = onDone_, children }) => {
 
     return (<>
         <AsyncStateIndicator error={error} loading={saving} text="Ukládám" />
-        <MediumEditableContent item={item} onChange={onChange} onBlur={onBlur} >
+        <DefaultContent item={item} onChange={onChange} onBlur={onBlur} >
             {children}
             <hr />
             {/* <pre>{JSON.stringify(item, null, 2)}</pre> */}
@@ -163,7 +205,7 @@ export const UpdateItemConfirm = ({ onDone = onDone_, children }) => {
             >
                 Uložit změny
             </button>
-        </MediumEditableContent>
+        </DefaultContent>
     </>
     )
 }
