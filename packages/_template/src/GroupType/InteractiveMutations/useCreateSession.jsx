@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { ReadItemURI } from "../Pages/PageReadItem";
+import { useEditAction } from "../../../../dynamic/src/Hooks/useEditAction";
 
 /**
  * @param {{
@@ -43,7 +45,7 @@ export function useCreateSession({
         commitNow,
     } = useEditAction(mutationAsyncAction, newItem, { mode: "confirm" });
 
-    const confirm = useCallback(async () => {
+    const handleConfirm = useCallback(async () => {
         const result = await commitNow(draft);
 
         // připrav další "nový" item (když by uživatel chtěl pokračovat v tvorbě)
@@ -51,10 +53,11 @@ export function useCreateSession({
 
         if (onAfterConfirm) {
             await onAfterConfirm(result, draft);
-            return result;
+            // return result;
         }
 
         // default: navigace na read
+        console.log("going to navigate", readUri, navigate)
         if (readUri && navigate) {
             const newId = result?.id ?? draft?.id;
             if (newId != null) {
@@ -64,11 +67,11 @@ export function useCreateSession({
         return result;
     }, [commitNow, draft, navigate, onAfterConfirm, readUri]);
 
-    const cancel = useCallback(async () => {
+    const handleCancel = useCallback(async () => {
         onCancel?.();
         if (onAfterCancel) {
             await onAfterCancel();
-            return;
+            // return;
         }
         navigate?.(-1);
     }, [navigate, onAfterCancel, onCancel]);
@@ -80,7 +83,7 @@ export function useCreateSession({
         error,
         onChange,
         onBlur,
-        confirm,
-        cancel,
+        handleConfirm,
+        handleCancel,
     };
 }

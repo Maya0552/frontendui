@@ -131,24 +131,30 @@ export const KebabMenu = ({ actions = [] }) => {
                         minWidth: 140,
                     }}
                 >
-                    {actions.map((action, i) => (
-                        <div
-                            key={i}
-                            onClick={() => {
-                                setOpen(false);
-                                action.onClick();
-                            }}
-                            style={{
-                                padding: "8px 12px",
-                                cursor: "pointer",
-                                whiteSpace: "nowrap",
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.background = "#f5f5f5")}
-                            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                        >
-                            {action.label}
-                        </div>
-                    ))}
+                    {actions.map((action, i) => {
+                        const children = action?.children
+                        if (children) {
+                            return <>{children}</>
+                        }
+                        return (
+                            <div
+                                key={i}
+                                onClick={() => {
+                                    setOpen(false);
+                                    action.onClick();
+                                }}
+                                style={{
+                                    padding: "8px 12px",
+                                    cursor: "pointer",
+                                    whiteSpace: "nowrap",
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.background = "#f5f5f5")}
+                                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                            >
+                                {action.label}
+                            </div>
+                        )
+                    })}
                 </div>
             )}
         </div>
@@ -185,7 +191,7 @@ export const Table = ({ data, table_def = null, TableBody = TableBody_ }) => {
 
     const _table_def = useMemo(() => table_def || buildTableDef(data), [data, table_def])
     const colnames = useMemo(() => Object.keys(_table_def).map((k) => _table_def[k].label), [_table_def])
-
+    console.log(_table_def)
     return (
         <div className="table-responsive">
             <table className="table table-stripped">

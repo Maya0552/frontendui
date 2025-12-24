@@ -13,10 +13,11 @@ import { useGQLEntityContext } from "../../Base/Helpers/GQLEntityProvider"
 
 export const UpdateURI = `${LinkURI.replace('view', 'edit')}:id`
 
-export const UpdateLink = ({...props}) => {
+export const UpdateLink = ({item, ...props}) => {
     const navigate = useNavigate()
     const handleClick = () => {
-        navigate(UpdateURI)
+        const {id} = item
+        navigate(UpdateURI.replace(":id", id))
     }
     return (
         <AbsolutePermissionGate roles={["superadmin"]} >

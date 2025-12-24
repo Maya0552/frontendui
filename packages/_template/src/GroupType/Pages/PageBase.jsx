@@ -19,7 +19,7 @@ export const PageItemBase = ({ children, queryAsyncAction=ReadAsyncAction }) => 
 export const PageBase = ({ children }) => {
     return (
         <>
-         
+            <PageNavbar />
             {children}
         </>
     )

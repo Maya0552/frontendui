@@ -79,6 +79,8 @@ export const useInfiniteScroll = ({
         result: null,
     }));
 
+    const runIdRef = useRef(0);
+
     const inFlightRef = useRef(false);
     // refs pro stabilní přístup v async kódu
     const stateRef = useRef(state);
@@ -104,17 +106,18 @@ export const useInfiniteScroll = ({
             hasMore: true,
             error: null,
             // dle potřeby: items: []
-            items: prev.items,
+            // items: prev.items,
+            items: []
         }));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [reset]);
 
     const loadMore = useCallback(async () => {
         if (!enabledRef.current) return null;
-
-        // ✅ tvrdý lock - zabrání dvěma souběžným voláním se stejným skip
         if (inFlightRef.current) return null;
         inFlightRef.current = true;
+
+        const myRunId = runIdRef.current;
 
         try {
             const snap = stateRef.current;
@@ -123,14 +126,15 @@ export const useInfiniteScroll = ({
             setState((prev) => ({ ...prev, loading: true, error: null }));
 
             const params = filterRef.current;
-            // console.log("loadMore.params", params)
             const result = await dispatch(asyncAction(params, gqlClient));
             const fetched = extractArrayFromThunkResult(result);
+
+            // ✅ pokud mezitím proběhl restart, tento výsledek ignoruj
+            if (runIdRef.current !== myRunId) return null;
 
             setState((prev) => {
                 const nextItems = mergeArraysById(prev.items, fetched);
 
-                // ✅ posun skip podle skutečně fetchovaných položek (ne podle limit)
                 const fetchedCount = fetched.length;
                 const limit = params?.limit;
 
@@ -141,7 +145,6 @@ export const useInfiniteScroll = ({
                     ? { ...prev.filter, skip: (prev.filter.skip || 0) + fetchedCount, limit: prev.filter.limit }
                     : prev.filter;
 
-                // ✅ okamžitě aktualizuj ref, aby další load použil nový skip i před rerenderem
                 filterRef.current = nextFilter;
 
                 return {
@@ -156,17 +159,46 @@ export const useInfiniteScroll = ({
 
             return result;
         } catch (e) {
-            setState((prev) => ({
-                ...prev,
-                loading: false,
-                hasMore: false,
-                error: e,
-            }));
+            // i error ignoruj, když to není aktuální běh
+            if (runIdRef.current === myRunId) {
+                setState((prev) => ({ ...prev, loading: false, hasMore: false, error: e }));
+            }
             return null;
         } finally {
             inFlightRef.current = false;
         }
     }, [dispatch, asyncAction, gqlClient, onAll]);
+
+    const restart = useCallback(async (newActionParams = {}) => {
+        // nový "běh" => zneplatní rozpracované výsledky
+        runIdRef.current += 1;
+
+        // odemkni případný in-flight lock, ať může hned startovat
+        inFlightRef.current = false;
+
+        const nextFilter = { ...(newActionParams || {}) };
+
+        // hned aktualizuj ref, aby první loadMore použil nový filter
+        filterRef.current = nextFilter;
+
+        // reset state + items []
+        setState((prev) => ({
+            ...prev,
+            filter: nextFilter,
+            loading: false,
+            hasMore: true,
+            error: null,
+            items: [],
+            result: null,
+        }));
+
+        // nech React propsat state/refs do UI a pak načti první stránku
+        await new Promise((r) => requestAnimationFrame(r));
+
+        // první stránka (skip typicky 0)
+        return loadMore();
+    }, [loadMore]);
+
     // sentinel node
     const sentinelNodeRef = useRef(null);
     const sentinelRef = useCallback((node) => {
@@ -226,6 +258,7 @@ export const useInfiniteScroll = ({
         result: state.result,
 
         loadMore,
+        restart,
         sentinelRef,
     };
 };

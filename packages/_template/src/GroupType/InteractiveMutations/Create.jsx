@@ -6,10 +6,12 @@ import { useEditAction } from "../../../../dynamic/src/Hooks/useEditAction"
 import { Dialog, ErrorHandler, LoadingSpinner } from "@hrbolek/uoisfrontend-shared"
 import { ReadItemURI } from "../Pages/PageReadItem"
 import { useCallback } from "react"
+import { useCreateSession } from "./useCreateSession"
+import { InsertAsyncAction } from "../Queries"
 
 export const CreateURI = LinkURI.replace('view', 'create')
 
-export const CreateLink = ({...props}) => {
+export const CreateLink = ({ ...props }) => {
     // const { can, roleNames } = useRolePermission(item, ["administrátor"])
     const navigate = useNavigate()
     const handleClick = () => {
@@ -18,11 +20,12 @@ export const CreateLink = ({...props}) => {
     return (
         <AbsolutePermissionGate roles={["superadmin"]} >
             <button {...props} onClick={handleClick} />
+            <a href="/#create" {...props} onClick={handleClick} >Create</a>
         </AbsolutePermissionGate>
     )
 }
 
-export const CreateButton = ({children, ...props}) => {
+export const CreateButton = ({ children, ...props }) => {
     const [visible, setVisible] = useState(false)
     const handleClick = (state) => () => {
         setVisible(state)
@@ -39,124 +42,87 @@ export const CreateDialog = ({
     title = "Editace",
     oklabel = "Ok",
     cancellabel = "Zrušit",
-    onOk: handleOk,
-    onCancel: handleCancel,
+    mutationAsyncAction = InsertAsyncAction,
+    onOk,
+    onCancel,
+    children,
+    ...props
 }) => {
-    const navigate = useNavigate();
-    const [ newItem, setNewItem ] = useState({
-        id: crypto.randomUUID(),
-        name: "Nový typ"
-    })
-    const {
-        draft,
-        loading: saving,
-        error,
-        onChange, 
-        onBlur,
-        commitNow
-    } = useEditAction(mutationAsyncAction, newItem, {
-        mode: "confirm", 
-        // onCommit: contextOnChange
-    })
-
-    const handleConfirm = useCallback(async () => {
-        setNewItem(prev => {
-            return {...prev,
-                id: crypto.randomUUID()
-            }
-        })
-        const result = await commitNow(draft)
-        console.log("handleConfirm", result)
-        if (handleOk) {
-            handleOk()
-        } else {
-            if (navigate) {
-                const link = ReadItemURI.replace(':id', `${draft.id}`);
-                navigate(link, { replace: true })
-            }
-        }
-    }, [setNewItem, commitNow, handleOk, navigate])
-
-    const handleCancel_ = useCallback(() => {
-        if (handleCancel) {
-            handleCancel()
-        } else {
-            navigate(-1)
-        }
-        
-    },[handleCancel, navigate])
+    const session = useCreateSession({
+        mutationAsyncAction,
+        onAfterConfirm: async (result) => {
+            if (onOk) onOk(result);
+        },
+        onAfterCancel: async () => {
+            if (onCancel) onCancel();
+        },
+    });
 
     return (
-        <Dialog 
+        <Dialog
             title={title}
             oklabel={oklabel}
             cancellabel={cancellabel}
-            onCancel={handleCancel_} 
-            onOk={handleConfirm}
+            onCancel={session.handleCancel}
+            onOk={session.handleConfirm}
+            {...props}
         >
-            <MediumEditableContent item={draft} onChange={onChange} onBlur={onBlur} >
-                {saving && <LoadingSpinner/>}
-                {error && <ErrorHandler errors={error} />}
+            <MediumEditableContent item={session.draft} onChange={session.onChange} onBlur={session.onBlur}>
+                {session.saving && <LoadingSpinner />}
+                {session.error && <ErrorHandler errors={session.error} />}
                 {children}
-            </MediumEditableContent>   
+            </MediumEditableContent>
         </Dialog>
-    )
-}
+    );
+};
 
-export const CreateBody = ({children, mutationAsyncAction=InsertAsyncAction, ...props}) => {
-    const navigate = useNavigate();
-    const [ newItem, setNewItem ] = useState({
-        id: crypto.randomUUID(),
-        name: "Nový typ"
-    })
-    const {
-        draft,
-        dirty,
-        loading: saving,
-        error,
-        onChange, 
-        onBlur,
-        onCancel,
-        commitNow
-    } = useEditAction(mutationAsyncAction, newItem, {
-        mode: "confirm", 
-        // onCommit: contextOnChange
-    })
-
-    const handleConfirm = async () => {
-        const result = await commitNow(draft)
-        console.log("handleConfirm", result)
-
-        if (navigate) {
-            const link = ReadItemURI.replace(':id', `${draft.id}`);
-            navigate(link, { replace: true })
+export const CreateBody = ({
+    children,
+    mutationAsyncAction = InsertAsyncAction,
+    onOk,
+    onCancel,
+    ...props
+}) => {
+    const session = useCreateSession({
+        readUri: ReadItemURI,
+        mutationAsyncAction,
+        onAfterConfirm: async (result, draft) => {
+            if (onOk) return onOk(result, draft);
+            // když onOk není, session udělá default navigaci
+        },
+        onAfterCancel: async () => {
+            if (onCancel) return onCancel();
+            // když onCancel není, session udělá default navigate(-1)
         }
-    }
-
-    const handleCancel = () => {
-        navigate(-1)
-    }
+    });
 
     return (
-        <MediumEditableContent item={draft} onChange={onChange} onBlur={onBlur} >
-            {saving && <LoadingSpinner/>}
-            {error && <ErrorHandler errors={error} />}
+        <MediumEditableContent
+            item={session.draft}
+            onChange={session.onChange}
+            onBlur={session.onBlur}
+            {...props}
+        >
+            {session.saving && <LoadingSpinner />}
+            {session.error && <ErrorHandler errors={session.error} />}
             {children}
-            <button 
-                className="btn btn-warning form-control" 
-                onClick={handleCancel}
-                // disabled={!dirty || saving}
+
+            <button
+                className="btn btn-warning form-control"
+                onClick={session.handleCancel}
+            // disabled={!session.dirty || session.saving}
             >
                 Zrušit změny
             </button>
-            <button 
-                className="btn btn-primary form-control" 
-                onClick={handleConfirm}
-                // disabled={!dirty || saving}
+
+            <button
+                className="btn btn-primary form-control"
+                onClick={session.handleConfirm}
+            // disabled={!session.dirty || session.saving}
             >
                 Uložit změny
             </button>
+        </MediumEditableContent>
+    );
+};
 
-        </MediumEditableContent>        
-    )    
-}
