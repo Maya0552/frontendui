@@ -30,13 +30,16 @@ import { Link as BaseLink } from "../../Base/Components/Link"
 export const MediumContent = ({ item }) => {
     return (<>
         <Attribute label="Název" item={item}>
-            <Link item={item} />
+            <BaseLink item={item} />
         </Attribute>
         <Attribute label="Anglický název" item={item} attribute_name={"nameEn"} />
         <Attribute label="Email" item={item} attribute_name={"email"} />
+        <Attribute label={"Typ"}>
+            <BaseLink item={item?.grouptype} />
+        </Attribute>
         <hr />
         <Attribute label={"Nadřízený"}>
-            <Link item={item?.mastergroup} />
+            <BaseLink item={item?.mastergroup} />
         </Attribute>
         <hr/>
         <Attribute label="Poslední změna" item={item} attribute_name={"lastchange"} />
