@@ -4,9 +4,30 @@ import { createAsyncGraphQLAction2 } from "../../../../dynamic/src/Core/createAs
 
 
 const InsertMutationStr = `
-mutation InsertMutation($id: UUID, $name: String, $name_en: String) {
-  result: Insert(
-    template: {id: $id, name: $name, nameEn: $name_en}
+mutation groupInsert(
+	$mastergroupId: UUID! # null, 
+	$name: String! # null, 
+	$grouptypeId: UUID! # null, 
+	$id: UUID # null, 
+	$nameEn: String # null, 
+	$abbreviation: String # null, 
+	$email: String # null, 
+	$subgroups: [GroupInsertSubGroupGQLModel!] # null, 
+	$memberships: [MembershipInsertGQLModel!] # null, 
+	$roles: [RoleInsertGQLModel!] # null
+) {
+  groupInsert(
+	group: {
+	mastergroupId: $mastergroupId, 
+	name: $name, 
+	grouptypeId: $grouptypeId, 
+	id: $id, 
+	nameEn: $nameEn, 
+	abbreviation: $abbreviation, 
+	email: $email, 
+	subgroups: $subgroups, 
+	memberships: $memberships, 
+	roles: $roles}
   ) {
     ... on InsertError {
       failed
