@@ -1,4 +1,4 @@
-import { LinkURI, LinkURIObj, MediumEditableContent } from "../Components"
+import { LinkURI, MediumEditableContent } from "../Components"
 import { InsertAsyncAction } from "../Queries"
 import { makeMutationURI } from "./helpers"
 import { 
@@ -11,7 +11,6 @@ import { ReadItemURI } from "../Pages/PageReadItem";
 
 
 export const CreateURI = makeMutationURI(LinkURI, "create", { withId: false });
-const C = LinkURIObj.action("create")
 
 const DefaultContent = MediumEditableContent
 const mutationAsyncAction = InsertAsyncAction

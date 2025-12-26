@@ -7,7 +7,7 @@ import {
     DeleteDialog as BaseDeleteDialog, 
     DeleteLink as BaseDeleteLink
 } from "../../Base/Mutations/Delete";
-import { VectorItemsURI } from "../Pages";
+import { VectorItemsURI } from "../Pages/PageVector";
 
 
 export const DeleteURI = makeMutationURI(LinkURI, "delete", { withId: true });
