@@ -34,7 +34,7 @@ import { Page } from "./Page"
  */
 export const BaseRouterSegments = [
     {
-        path: `/${GenericURIRoot}/:typename/view/:id`,
+        path: `/${GenericURIRoot}/:typename/:action/:id`,
         element: (<Page />),
     },
     // {

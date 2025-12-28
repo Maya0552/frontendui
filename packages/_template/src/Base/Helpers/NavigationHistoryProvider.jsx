@@ -121,7 +121,6 @@ export const useAzureLikeHistory = () => {
 export const NavigationHistoryLinks = () => {
     const { items, goToEntry, clear } = useAzureLikeHistory();
     const navigate = useNavigate();
-    if (!items.length) return null;
     const ordered = useMemo(() => [...items].reverse(), [items]);
     const handleClick = (e) => {
         const href = (e?.target || {})?.href
@@ -134,6 +133,9 @@ export const NavigationHistoryLinks = () => {
         e.preventDefault()
         goToEntry(entry)
     }
+
+    if (!items.length) return null;
+    
     return (
         <Navbar bg="light">
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>

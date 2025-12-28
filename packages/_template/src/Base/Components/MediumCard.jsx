@@ -6,6 +6,22 @@ export const MediumCard = ({ header, item }) => {
     return (
         <CardCapsule header={header || <Link item={item}/>} item={item}>
             <MediumContent item={item} />
+            <hr/>
+            {Object.entries(item).map(([attribute_name, attribute_value]) => {
+                if (Array.isArray(attribute_value)) return null
+                if (typeof attribute_value === "object" && attribute_value !== null) {
+                    return <Link item={item} action={attribute_name}><b>{attribute_name} {JSON.stringify({})}</b><br/></Link>
+                }
+                return null
+            }
+            )}
+            <hr/>
+            {Object.entries(item).map(([attribute_name, attribute_value]) => {
+                if (Array.isArray(attribute_value)) return (
+                    <Link item={item} action={attribute_name}><b>{attribute_name} []</b><br/></Link>
+                )
+                return null
+            })}
         </CardCapsule>
     )
 }

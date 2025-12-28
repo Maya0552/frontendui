@@ -4,11 +4,12 @@ import { useGQLType } from "../../../../dynamic/src/Hooks/useGQLType"
 
 import { LargeCard } from "../Components/LargeCard"
 import { CardCapsule } from "../Components/CardCapsule"
-import { MediumCardScalars } from "../Scalars/ScalarAttribute"
-import { MediumCardVectors, Tree } from "../Vectors/VectorAttribute"
+import { MediumCardScalars, ScalarAttribute } from "../Scalars/ScalarAttribute"
+import { MediumCardVectors, Tree, VectorAttribute } from "../Vectors/VectorAttribute"
 import { useGQLEntityContext, AsyncActionProvider } from "../Helpers/GQLEntityProvider"
 import { Row } from "../Components/Row"
 import { Col } from "../Components/Col"
+import { Card } from "react-bootstrap"
 
 
 export const GeneratedContentBase = ({ item }) => {
@@ -133,37 +134,31 @@ export const PageItemBase = ({
 
 
 
-export const PageContent = ({children}) => {
+export const PageContent = ({queryById, children, params}) => {
      const gqlContext= useGQLEntityContext()
+     const {id, typename, action="view"} = useParams()
      const { item } = gqlContext || {}
     if (!item) return (<div>Položka nenalezena<pre>{JSON.stringify(gqlContext)}</pre></div>)
-    return (
+    let content = children
+    const attribute_value = item?.[action]
+    if ((action === "view"))
+        content = (
+            <>
+                <MediumCardScalars key={"MediumCardScalars"} item={item} />
+                <MediumCardVectors key={"MediumCardVectors"} item={item} />
+            </>
+        )
+    
+    if (Array.isArray(attribute_value)) 
+        content = <VectorAttribute attribute_name={action} item={item} />
+    else if (attribute_value)
+        content = <ScalarAttribute attribute_name={action} item={item} />
+    return (<>
         <LargeCard item={item} >
-            {children?children:<>
-                <MediumCardScalars item={item} />
-                <MediumCardVectors item={item} />
-            </>}
+            {content}
+            <MediumCardScalars key={"MediumCardScalars"} item={item} />
+                <MediumCardVectors key={"MediumCardVectors"} item={item} />
         </LargeCard>
-    )
-}
-
-export const Page = ({ children }) => {
-    const {id, typename} = useParams()
-    // const id = "51d101a0-81f1-44ca-8366-6cf51432e8d6";
-    const item = {id}
-    const { ByIdAsyncAction, queryById } = useGQLType(typename || "RoleGQLModel")    
-    return (
-        // <div>Hello</div>
-        <>{ByIdAsyncAction&&
-            <AsyncActionProvider item={item} queryAsyncAction={ByIdAsyncAction}>
-                <PageContent>
-                    {children}
-                </PageContent>
-            </AsyncActionProvider>
-        }
-        {!ByIdAsyncAction&&
-            <div>No ByIdAsyncAction for type {typename}</div>
-        }
         <Row>
             <Col>
                 <CardCapsule header="QueryById">
@@ -172,10 +167,37 @@ export const Page = ({ children }) => {
             </Col>
             <Col>
                 <CardCapsule header="Parametry">
+                    <pre>{JSON.stringify(params, null, 2)}</pre>
+                </CardCapsule>
+            </Col>
+            <Col>
+                <CardCapsule header="Response">
                     <pre>{JSON.stringify(item, null, 2)}</pre>
                 </CardCapsule>
             </Col>
         </Row>
+    </>
+    )
+}
+
+export const Page = ({ children }) => {
+    const {id, typename, action="view"} = useParams()
+    // const id = "51d101a0-81f1-44ca-8366-6cf51432e8d6";
+    const item = {id}
+    const { ByIdAsyncAction, queryById } = useGQLType(typename || "RoleGQLModel")    
+    return (
+        // <div>Hello</div>
+        <>{ByIdAsyncAction&&
+            <AsyncActionProvider item={item} queryAsyncAction={ByIdAsyncAction}>
+                <PageContent queryById={queryById} params={item}>
+                    {children}
+                </PageContent>
+            </AsyncActionProvider>
+        }
+        {!ByIdAsyncAction&&
+            <div>No ByIdAsyncAction for type {typename}</div>
+        }
+
         </>
     )
 }

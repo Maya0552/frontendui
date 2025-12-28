@@ -16,7 +16,7 @@ export const GenericURIRoot = "/generic";
 export const LinkURI = GenericURIRoot + "/view/";
 
 
-export const Link = ({ item, action, children }) => {
+export const Link = ({ item, action="view", children }) => {
     const SpecificLink = item?.__typename ? RegisterofLinks[item.__typename] : null;
     if (SpecificLink && SpecificLink !== Link) {
         // console.log('Using specific link for typename:', item.__typename);
@@ -27,7 +27,7 @@ export const Link = ({ item, action, children }) => {
         children || item?.fullname || item?.name || item?.id || "Data Error";
 
     const to = item?.__typename && item?.id
-        ? `${GenericURIRoot}/${item.__typename}/view/${item.id}`
+        ? `${GenericURIRoot}/${item.__typename}/${action}/${item.id}`
         : "#";
 
     return <ProxyLink to={to}>{label}</ProxyLink>;
