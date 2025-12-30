@@ -58,8 +58,16 @@ export const TemplateRouterSegments = [
         path: DeleteItemURI,
         element: (<PageDeleteItem />),
     },   
+    // {
+    //     path: "sad",
+    //     element: (<PageReadItemRolesOn />)
+    // },
     {
-        path: "sad",
-        element: (<PageReadItemRolesOn />)
+        path: VectorItemsURI.replace("list", ":any"),
+        element: (<PageVector />),
     },
+    {
+        path: ReadItemURI.replace("view", ":any"),
+        element: (<PageReadItem />),
+    }    
 ]
