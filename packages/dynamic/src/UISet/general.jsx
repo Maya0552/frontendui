@@ -160,10 +160,10 @@ function generateFieldArguments(args, typesByName) {
 }
 
 function getFragmentName(typeName) {
-    if (typeName.endsWith("GQLModelUpdateError")) {
+    if (typeName?.endsWith("GQLModelUpdateError")) {
         return "Error";
-    } else if (typeName.endsWith("GQLModel")) {
-        return typeName.slice(0, -"GQLModel".length);
+    } else if (typeName?.endsWith("GQLModel")) {
+        return typeName?.slice(0, -"GQLModel".length);
     } else {
         return typeName;
     }
@@ -353,7 +353,7 @@ function generateQuery(introspection, typeName) {
         const topLevelKind = field.type.kind;
         const namedType = getNamedType(field.type);
         const hasReturnType = topLevelKind !== "NON_NULL" && namedType.name === typeName;
-        return hasReturnType && field.name.endsWith("ById")
+        return hasReturnType && field.name?.endsWith("ById")
     });
 
     if (matchingField) {
