@@ -1,9 +1,8 @@
 import {
     createBrowserRouter,
     Outlet,
-    RouterProvider
+    RouterProvider,
 } from "react-router-dom";
-
 import { NavigationHistoryLinks, NavigationHistoryProvider } from '../../../packages/_template/src/Base/Helpers/NavigationHistoryProvider';
 
 import { BaseRouterSegments } from "../../../packages/_template/src/Base/Pages/RouterSegment";
@@ -13,10 +12,13 @@ import { BaseRouterSegments } from "../../../packages/_template/src/Base/Pages/R
 // import { UserRouterSegments } from "../../../packages/_template/src/UserGQLModel/Pages/RouterSegment";
 // import { GroupTypeRouterSegments } from "../../../packages/_template/src/GroupTypeGQLModel/Pages/RouterSegment";
 // import { RoleRouterSegments } from "../../../packages/_template/src/RoleGQLModel/Pages";
+// import { Page } from "../../../packages/_template/src/Base/Pages/Page";
+import { AppNavbar } from "./AppNavbar";
 
 
 const AppLayout = () => (
     <NavigationHistoryProvider>
+        <AppNavbar />
         <NavigationHistoryLinks />
         <Outlet />
     </NavigationHistoryProvider>
@@ -33,6 +35,7 @@ const Routes = [
             // ...UserRouterSegments,
             // ...GroupTypeRouterSegments,
             // ...RoleRouterSegments,
+            
         ],
     },
 ];
