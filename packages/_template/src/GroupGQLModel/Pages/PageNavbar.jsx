@@ -11,6 +11,10 @@ import { CreateURI as CreateRoleTypeURI } from '../../RoleTypeGQLModel/Component
 import { CreateURI as CreateGroupTypeURI } from '../../GroupTypeGQLModel/Components/Link';
 import { VectorItemsURI as UserVectorItemsURI } from '../../UserGQLModel/Components/Link';
 import { VectorItemsURI as GroupTypeVectorItemsURI } from '../../GroupTypeGQLModel/Components/Link';
+import { CreateGroupInserMembershipButton } from '../Mutations/AddMembership';
+import { UpdateButton, UpdateLink } from '../Mutations/Update';
+import { AddRoleOnGroupButton } from '../../RoleGQLModel/Mutations/AddRoleonGroup';
+import { Link } from '../../Base/Components';
 
 /**
  * Allow to use HashContainer for determination which component at page will be rendered.
@@ -125,6 +129,27 @@ export const PageNavbar = ({ item, children, onSearchChange }) => {
                         <NavDropdown.Item as={GroupLink} item={item} action="subgroups">
                             Podskupiny
                         </NavDropdown.Item>
+                        <NavDropdown.Item as={GroupLink} item={item} action="memberships">
+                            Členové
+                        </NavDropdown.Item>
+                        <NavDropdown.Divider />
+                        <NavDropdown.Item 
+                            as={CreateGroupInserMembershipButton} 
+                            item={item} 
+                            initialItem={{
+                                group: item,
+                                groupId: item?.groupId
+                            }}
+                            action="memberships"
+                        >
+                            Nové členství
+                            {/* <CreateGroupInserMembershipButton 
+                                item={item}
+                                className="btn btn-link border-0"
+                            >
+                                Nové členství
+                            </CreateGroupInserMembershipButton> */}
+                        </NavDropdown.Item>
                     </NavDropdown>
 
                     <NavDropdown title="Uživatelé">
@@ -187,3 +212,62 @@ export const PageNavbar = ({ item, children, onSearchChange }) => {
         </div>
     );
 };
+
+export const MyNavDropdown = ({ item }) => {
+    const { __typename } = item || {}
+    const hasProperType = __typename === "GroupGQLModel"
+    return (
+        <NavDropdown title="Skupiny">
+            <NavDropdown.Item as={ProxyLink} to={GroupVectorItemsURI}>
+                Seznam všech skupin
+            </NavDropdown.Item>
+            
+            <NavDropdown.Item as={GroupLink} item={item} action="roles" disabled={!hasProperType}>
+                Role<br/><Link item={item} />
+            </NavDropdown.Item>
+            <NavDropdown.Item as={GroupLink} item={item} action="subgroups" disabled={!hasProperType}>
+                Podskupiny<br/><Link item={item} />
+            </NavDropdown.Item>
+            <NavDropdown.Item as={GroupLink} item={item} action="memberships" disabled={!hasProperType}>
+                Členové<br/><Link item={item} />
+            </NavDropdown.Item>
+        
+        
+            <NavDropdown.Divider />
+            
+            <NavDropdown.Item 
+                as={UpdateLink} 
+                item={item}
+                disabled={!hasProperType} 
+            >
+                Upravit<br/><Link item={item} />
+            </NavDropdown.Item>
+            <NavDropdown.Item 
+                as={CreateGroupInserMembershipButton} 
+                item={item} 
+                disabled={!hasProperType} 
+                initialItem={{
+                    group: item,
+                    groupId: item?.groupId
+                }}
+            >
+                Nové členství<br/><Link item={item} />
+            </NavDropdown.Item>
+            <NavDropdown.Item 
+                as={AddRoleOnGroupButton} 
+                item={item} 
+                rbacitem={item}
+                initialItem={{
+                    group: item,
+                    groupId: item?.id,
+                }}
+                disabled={!(item?.__typename === "GroupGQLModel")}
+            >
+                Nové oprávnění na <br/><Link item={item} />
+            </NavDropdown.Item>
+            
+            <NavDropdown.Divider />
+            <NavDropdown.Item as={ProxyLink} to={`/generic/${item?.__typename}/__def/${item?.id}`} reloadDocument={false}>Definice</NavDropdown.Item >
+        </NavDropdown>
+    )
+}

@@ -29,7 +29,7 @@ import { LargeCard } from "../Components"
  */
 export const PageItemBase = ({ 
     queryAsyncAction=ReadAsyncAction,
-    PageNavbar=PageNavbar_,
+    PageNavbar=null,
     ItemLayout=LargeCard,
     SubPage=null,
     ...props
@@ -49,7 +49,7 @@ export const PageItemBase = ({
 export const PageBase = ({ children }) => {
     return (
         <>
-            <PageNavbar_ />
+            {/* <PageNavbar_ /> */}
             {children}
         </>
     )

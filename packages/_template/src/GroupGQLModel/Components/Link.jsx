@@ -1,6 +1,6 @@
-import { ProxyLink } from "@hrbolek/uoisfrontend-shared"
 import { URIRoot } from "../../uriroot";
-import { registerLink } from "../../Base/Components/Link";
+import { registerLink, Link as Link_ } from "../../Base/Components/Link";
+import { ProxyLink } from "../../Base/Components/ProxyLink";
 
 const modelURI = `${URIRoot}/group`
 export const ListURI = `${modelURI}/list/`;
@@ -46,7 +46,7 @@ export const DeleteItemURI = `${DeleteURI}${idParam}`;
  */
 export const Link = ({ item, LinkURI:LinkURI_, action="view", children, ...props}) => {
     const targetURI = LinkURI_ ?? LinkURI.replace('view', action);
-    return <ProxyLink to={targetURI + item?.id} {...props}>{children || item?.fullname || item?.name || item?.id || "Nevim"}</ProxyLink>
+    return <Link_ to={targetURI + item?.id} {...props}>{children || item?.fullname || item?.name || item?.id || "Nevim"}</Link_>
     // return <BaseUI.Link item={item} />
     // return <a>{children || item?.fullname || item?.name || item?.id || "Nevim"}</a>
 }

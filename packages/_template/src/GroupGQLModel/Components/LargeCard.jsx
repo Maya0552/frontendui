@@ -12,6 +12,7 @@ import { SimpleCardCapsuleRightCorner } from "../../Base/Components"
 import { UpdateLink } from "../Mutations/Update"
 import { RolesURI } from "../Pages/PageReadItemEx"
 import { MegaphoneFill } from "react-bootstrap-icons"
+import { ProxyLink } from "../../Base/Components/ProxyLink"
 
 /**
  * A large card component for displaying detailed content and layout for an template entity.
@@ -41,6 +42,7 @@ export const LargeCard = ({ item, children, CardCapsule=CardCapsule_, MediumCont
     // console.log("LargeCard.item", item)
     return (
         <CardCapsule item={item} >
+            {/* <ProxyLink to={`/generic/${item?.__typename}/__def/${item?.id}`} reloadDocument={false}>Definice</ProxyLink> */}
             <Row>
                 <LeftColumn>
                     <MediumCard item={item} title="Detail" />

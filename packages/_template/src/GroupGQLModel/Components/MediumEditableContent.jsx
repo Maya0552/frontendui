@@ -2,6 +2,7 @@ import { Input } from "@hrbolek/uoisfrontend-shared"
 import { EntityLookup } from "../../Base/FormControls/EntityLookup"
 import { ReadPageAsyncAction } from "../Queries"
 import { SearchAsyncAction } from "../Queries/SearchAsyncAction"
+import { Group } from "../../Base/Helpers/GQLEntityProvider"
 
 /**
  * A component that displays medium-level content for an template entity.
@@ -42,6 +43,9 @@ export const MediumEditableContent = ({ item, onChange=(e)=>null, onBlur=(e)=>nu
                 onChange={onChange} 
                 onBlur={onBlur} 
             />
+            {/* <Group id="subgroup">
+                <Input id={"name"} label={"Jméno"} className="form-control" value={item?.name|| "Název"} onChange={onChange} onBlur={onBlur} />    
+            </Group> */}
             {children}
         </>
     )

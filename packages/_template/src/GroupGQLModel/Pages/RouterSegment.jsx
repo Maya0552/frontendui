@@ -4,7 +4,7 @@ import { PageCreateItem } from "./PageCreateItem"
 import { PageReadItem } from "./PageReadItem"
 import { PageDeleteItem } from "./PageDeleteItem"
 
-import { PageReadItemRoles, PageReadItemRolesOn, PageReadItemSubgroups, RolesOnURI, RolesURI, SubgroupsURI } from './PageReadItemEx'
+import { MembershipsURI, PageReadItemMemberships, PageReadItemRoles, PageReadItemRolesOn, PageReadItemSubgroups, RolesOnURI, RolesURI, SubgroupsURI } from './PageReadItemEx'
 import { CreateURI, DeleteItemURI, DeleteURI, ListURI, ReadItemURI, UpdateItemURI, UpdateURI } from "../Components"
 
 /**
@@ -68,6 +68,10 @@ export const GroupRouterSegments = [
     {
         path: SubgroupsURI,
         element: (<PageReadItemSubgroups />)
+    },
+    {
+        path: MembershipsURI,
+        element: (<PageReadItemMemberships />)
     },
     {
         path: ListURI.replace("list", ":any"),

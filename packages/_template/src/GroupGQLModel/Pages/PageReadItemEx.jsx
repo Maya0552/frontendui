@@ -1,5 +1,6 @@
 import { ReadItemURI } from "../Components"
 import { ReadAsyncAction } from "../Queries"
+import { GroupMemberships } from "../Vectors/GroupMemberships"
 import { GroupRoles } from "../Vectors/GroupRoles"
 import { GroupRolesOn } from "../Vectors/GroupRolesOn"
 import { GroupSubgroups } from "../Vectors/GroupSubgroups"
@@ -8,7 +9,7 @@ import { PageReadItem } from "./PageReadItem"
 export const RolesOnURI = ReadItemURI.replace("view", "roleson")
 export const RolesURI = ReadItemURI.replace("view", "roles")
 export const SubgroupsURI = ReadItemURI.replace("view", "subgroups")
-
+export const MembershipsURI = ReadItemURI.replace("view", "memberships")
 /**
  * Základní obálka pro „read“ stránku entity podle `:id` z routy.
  *
@@ -48,5 +49,9 @@ export const PageReadItemRoles = ({ queryAsyncAction=ReadAsyncAction}) => (
 
 export const PageReadItemSubgroups = ({ queryAsyncAction=ReadAsyncAction}) => (
     <PageReadItem queryAsyncAction={queryAsyncAction} SubPage={GroupSubgroups}/>
+)
+
+export const PageReadItemMemberships = ({ queryAsyncAction=ReadAsyncAction}) => (
+    <PageReadItem queryAsyncAction={queryAsyncAction} SubPage={GroupMemberships}/>
 )
 
