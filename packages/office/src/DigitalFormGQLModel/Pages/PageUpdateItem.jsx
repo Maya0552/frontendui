@@ -7,7 +7,19 @@ import { Input } from "../../../../_template/src/Base/FormControls/Input";
 import { Row } from "../../../../_template/src/Base/Components/Row";
 import { Col } from "../../../../_template/src/Base/Components/Col";
 import { Dialog } from "../../../../_template/src/Base/FormControls/Dialog";
-import { DesignButton } from "../../DigitalFormFieldGQLModel/Mutations/Design";
+import { DesignButton as DesignFieldButton} from "../../DigitalFormFieldGQLModel/Mutations/Design";
+import { DesignButton as DesignSectionButton } from "../../DigitalFormSectionGQLModel/Mutations/Design";
+import { AsyncActionProvider, useGQLEntityContext } from "../../../../_template/src/Base/Helpers/GQLEntityProvider";
+import { DeleteAsyncAction as DeleteSectionAsyncAction, InsertAsyncAction as InsertSectionAsyncAction, ReadAsyncAction as ReadFormSectionAsyncAction, UpdateAsyncAction, UpdateAsyncAction as UpdateFormAsyncAction } from "../../DigitalFormSectionGQLModel/Queries";
+import { useEffect } from "react";
+import { AsyncStateIndicator } from "../../../../_template/src/Base/Helpers/AsyncStateIndicator";
+import { DeleteAsyncAction as DeleteFieldAsyncAction, InsertAsyncAction as InsertFieldAsyncAction, ReadAsyncAction as ReadFormFieldAsyncAction } from "../../DigitalFormFieldGQLModel/Queries";
+import { useAsyncThunkAction } from "../../../../dynamic/src/Hooks";
+import { DeleteButton as DeleteFormSectionButton} from "../../DigitalFormSectionGQLModel/Mutations/Delete";
+import { UpdateButton } from "../../DigitalFormFieldGQLModel/Mutations/Update";
+import { DeleteButton as DeleteFormFieldButton } from "../../DigitalFormFieldGQLModel/Mutations/Delete";
+import { CreateButton as CreateFormSectionButton } from "../../DigitalFormSectionGQLModel/Mutations/Create";
+import { CreateButton as CreateFormFieldButton } from "../../DigitalFormFieldGQLModel/Mutations/Create";
 
 
 // const index = {
@@ -85,7 +97,7 @@ import { DesignButton } from "../../DigitalFormFieldGQLModel/Mutations/Design";
  *  Support utilities
  * ============================================================================= */
 
-const DeleteButton = ({ className, onClick = () => null, children, ...props }) => {
+const ConfirmClickButton = ({ className, onClick = () => null, children, ...props }) => {
     const [state, setState] = useState(0)
     const handleCancel = () => setState(prev => 0)
     const handleProgress = () => setState(prev => 1)
@@ -390,61 +402,64 @@ export const UpdateField = ({
     submission,
     onFieldValueChange,
     onRemoveField,
+    
     handleFormItemDefChange = (prev) => null,
     mode = "design"
 }) => {
     const submissionField = selectSubmissionField(submission, sectionInstance, fieldDef);
     const value = submissionField?.value ?? "";
     // const handleFieldDefChange = useCallback(())
+    const { 
+        run: deleteField, error: errorDeleteField, loading: deletingField, 
+        // entity, data 
+    } = useAsyncThunkAction(DeleteFieldAsyncAction, empty, {deferred: true})
+    const handleDelete = useCallback(async() => {
+        const result = await deleteField({
+            id: fieldDef?.id,
+            lastchange: fieldDef?.lastchange
+        })
+        onRemoveField()
+    }, [deleteField, onRemoveField])
     return (
-        <SimpleCardCapsule
-            title={<>
-                <strong>
-                    <WrapWithDialog
-                        id={fieldDef?.id}
-                        name="label"
-                        value={fieldDef?.label}
-                        onChange={handleFormItemDefChange}
-                    >
-                        {fieldDef?.label ?? "------------"}
-                    </WrapWithDialog>
-                </strong>{" "}
-                {(mode === "design") && <small>
-                    <WrapWithDialog
-                        id={fieldDef?.id}
-                        name="name"
-                        value={fieldDef?.name}
-                        onChange={handleFormItemDefChange}
-                    >
-                        {fieldDef?.name ?? "------------"}
-                    </WrapWithDialog>
-                </small>}{" "}
-                {fieldDef?.required ? <strong>*</strong> : null}
-            </>}
-        >
-            {(mode === "design") &&
-                <SimpleCardCapsuleRightCorner>
-                    <DesignButton 
-                        className="btn btn-sm btn-outline-primary border-0"
-                        item={fieldDef}
-                    >
-                        PencilFill
-                    </DesignButton>
-                    <DeleteButton className="btn btn-sm border-0" type="button" onClick={() => onRemoveField(fieldDef?.id)} title="Remove field">
-                        🗑
-                    </DeleteButton>
-                </SimpleCardCapsuleRightCorner>
-            }
-            <Input
-                className="form-control" value={value}
-                onChange={(e) => onFieldValueChange(sectionDef, sectionInstance, fieldDef, e.target.value)}
-                placeholder="Enter value…"
-            />
-        </SimpleCardCapsule>
+        <AsyncActionProvider item={fieldDef} queryAsyncAction={ReadFormFieldAsyncAction} options={{ deferred: true }}>
+            <SimpleCardCapsule
+                title={<>
+                    <strong>{fieldDef?.label ?? "------------"}</strong>{" "}
+                    {(mode === "design") && <small>{fieldDef?.name ?? "------------"}</small>}{" "}
+                    {fieldDef?.required ? <strong>*</strong> : null}
+                </>}
+            >
+                {(mode === "design") &&
+                    <SimpleCardCapsuleRightCorner>
+                        {/* <DesignFieldButton 
+                            className="btn btn-sm btn-outline-primary border-0"
+                            item={fieldDef}
+                        >
+                            PencilFill
+                        </DesignFieldButton> */}
+                        
+                        {/* <UpdateButton className="btn btn-sm border-0">Pencil</UpdateButton> */}
+                        {/* <ConfirmClickButton className="btn btn-sm border-0" type="button" onClick={() => onRemoveField(fieldDef?.id)} title="Remove field">
+                            🗑
+                        </ConfirmClickButton>
+                        <DeleteFormFieldButton vectorItemsURI={null} className="btn btn-sm border-0">🗑</DeleteFormFieldButton> */}
+                        <ConfirmClickButton className="btn btn-sm border-0" type="button" onClick={handleDelete} title="Remove field">
+                            🗑
+                        </ConfirmClickButton>
 
+                    </SimpleCardCapsuleRightCorner>
+                }
+                <Input
+                    className="form-control" value={value}
+                    onChange={(e) => onFieldValueChange(sectionDef, sectionInstance, fieldDef, e.target.value)}
+                    placeholder="Enter value…"
+                />
+            </SimpleCardCapsule>
+        </AsyncActionProvider>
     );
 };
 
+const empty = {}
 export const UpdateFormSection = ({
     formSectionDef,
     submission,
@@ -454,11 +469,11 @@ export const UpdateFormSection = ({
     // value events
     onFieldValueChange,
 
-    // design events
-    onAddSubSection,
-    onRemoveSection,
-    onAddField,
-    onRemoveField,
+    // // design events
+    // onAddSubSection,
+    // onRemoveSection,
+    // onAddField,
+    // onRemoveField,
     handleFormItemDefChange
 }) => {
     const sectionInstances = useMemo(
@@ -471,119 +486,174 @@ export const UpdateFormSection = ({
     const isErrorSingle = repeatable === false && sectionInstances.length > 1;
 
     const H = headingIndex[clamp(level, 1, 6)] ?? headingIndex[6];
+    const { 
+        run: update, error: errorUpdate, loading: updating, 
+        // entity, data 
+    } = useAsyncThunkAction(UpdateAsyncAction, empty, {deferred: true})
+    const { 
+        run: insertSection, error: errorInsertSection, loading: creatingSection, 
+        // entity, data 
+    } = useAsyncThunkAction(InsertSectionAsyncAction, empty, {deferred: true})
+    const { 
+        run: deleteSection, error: errorDeleteSection, loading: deletingSection, 
+        // entity, data 
+    } = useAsyncThunkAction(DeleteSectionAsyncAction, empty, {deferred: true})
+    const { 
+        run: insertField, error: errorInsertField, loading: creatingField, 
+        // entity, data 
+    } = useAsyncThunkAction(InsertFieldAsyncAction, empty, {deferred: true})
+    const { 
+        run: deleteField, error: errorDeleteField, loading: deletingField, 
+        // entity, data 
+    } = useAsyncThunkAction(DeleteFieldAsyncAction, empty, {deferred: true})
 
+    const { reRead } = useGQLEntityContext()
+    const onAddSubSection = useCallback(async (id)=>{
+        console.log("onAddSubSection", id)
+        const itemid = crypto.randomUUID();
+        const result = await insertSection({ 
+            sectionId: formSectionDef?.id, 
+            id: itemid,
+            formId: formSectionDef?.formId,
+            name: "sekce",
+            label: "Nová sekce",
+            labelEn: "New section",
+            description: `Sekce úrovně ${level}`,
+            repeatableMin: 1,
+            repeatableMax: 1,
+            fields: [
+                {
+                    id: crypto.randomUUID(),
+                    formSectionId: itemid,
+                    formId: formSectionDef?.formId,
+                    label: "Nová položka",
+                    labelEn: "New field",
+                    name: "field"
+                }
+            ]
+        })
+        console.log("onAddSubSection.result", result)
+    }, [])
+    const onRemoveSection = useCallback(async(e)=>{
+        console.log("onRemoveSection", e)
+        const result = await deleteSection({
+            id: formSectionDef?.id,
+            lastchange: formSectionDef?.lastchange
+        })
+        console.log("onRemoveSection.result", result)
+        reRead()
+    }, [reRead])
+    const onAddField = useCallback(async(e)=>{
+        console.log("onAddField", e)
+        const itemid = crypto.randomUUID();
+        const result = await insertField({ 
+            formSectionId: formSectionDef?.id, 
+            id: itemid,
+            formId: formSectionDef?.formId,
+            name: "field",
+            label: "Nová položka",
+            labelEn: "New field",
+        })
+        console.log("onAddField.result", result)
+    }, [])
+    const onRemoveField = useCallback(async(e)=>{
+        console.log("onRemoveField", e)
+        const result = {}
+        console.log("onRemoveField.result", result)
+        reRead()
+    }, [reRead])
     return (
-        <SimpleCardCapsule title={<>
-            {(mode === "design") && (<>{formSectionDef?.label ?? formSectionDef?.name}{" "}</>)}
-            {(mode === "design") && <small>({formSectionDef?.name})</small>}
-        </>} style={{ paddingLeft: 12, borderLeft: "2px solid #e02222ff" }}>
-            {(mode === "design") &&
-                <SimpleCardCapsuleRightCorner>
-                    
+        <AsyncActionProvider item={formSectionDef} queryAsyncAction={ReadFormSectionAsyncAction} options={{ deferred: true }}>
+            <AsyncStateIndicator error={errorUpdate} loading={updating} text="Ukládám" />
+            <AsyncStateIndicator error={errorInsertSection} loading={creatingSection} text="Vytvářím sekci" />
+            <AsyncStateIndicator error={errorDeleteSection} loading={deletingSection} text="Odstraňuji sekci" />
+            <AsyncStateIndicator error={errorDeleteField} loading={deletingField} text="Odstraňuji položku" />
 
-                    <DeleteButton className="btn btn-sm border-0" type="button" onClick={() => onAddSubSection(formSectionDef?.id)} title="Add subsection">
-                        + sekce
-                    </DeleteButton>
-                    <DeleteButton className="btn btn-sm border-0" type="button" onClick={() => onAddField(formSectionDef?.id)} title="Add field">
-                        + field
-                    </DeleteButton>
-                    <DeleteButton className="btn btn-sm border-0" type="button" onClick={() => onRemoveSection(formSectionDef?.id)} title="Remove section">
+            <SimpleCardCapsule title={<>
+                {(mode === "design") && (<>{formSectionDef?.label ?? formSectionDef?.name}{" "}</>)}
+                {(mode === "design") && <small>({formSectionDef?.name})</small>}
+            </>} style={{ paddingLeft: 12, borderLeft: "2px solid #e02222ff" }}>
+                {(mode === "design") &&
+                    <SimpleCardCapsuleRightCorner>
+                        <DesignSectionButton
+                            className="btn btn-sm btn-outline-primary border-0"
+                        >Pencil</DesignSectionButton>
+
+                        <ConfirmClickButton className="btn btn-sm border-0" onClick={onAddSubSection}>
+                        + Sekce  X 
+                        </ConfirmClickButton>
+                        <ConfirmClickButton className="btn btn-sm border-0" onClick={onAddField}>
+                        + Položka  X 
+                        </ConfirmClickButton>
+                        <ConfirmClickButton className="btn btn-sm border-0" onClick={onRemoveSection}>
                         🗑
-                    </DeleteButton>
-                </SimpleCardCapsuleRightCorner>
-            }
-            <div>
-                <H>
-                    <WrapWithDialog
-                        id={formSectionDef?.id}
-                        name="label"
-                        value={formSectionDef?.label}
-                        onChange={handleFormItemDefChange}
-                    >
-                        {formSectionDef?.label ?? "------------"}
-                    </WrapWithDialog>
-                    {(mode === "design") &&
-                        <small>
-                            <WrapWithDialog
-                                id={formSectionDef?.id}
-                                name="name"
-                                value={formSectionDef?.name}
-                                onChange={handleFormItemDefChange}
-                            >
-                                {formSectionDef?.name ?? "------------"}
-                            </WrapWithDialog>
-                        </small>
-                    }
-                </H>
+                        </ConfirmClickButton>
+                    </SimpleCardCapsuleRightCorner>
+                }
                 <div>
-                    repeat: {formSectionDef?.repeatableMin ?? "undef"}-
-                    {formSectionDef?.repeatableMax ?? "undef"} ({repeatable ? "repeatable" : "single"})
-                </div>
-                <WrapWithDialog
-                    id={formSectionDef?.id}
-                    name="description"
-                    value={formSectionDef?.description}
-                    onChange={handleFormItemDefChange}
-                >
-                    {formSectionDef?.description ?? "------------"}
-                </WrapWithDialog>
+                    <H>{formSectionDef?.label ?? "--NEOZNAČEN--"}</H>
+                    {(mode === "design") && (<div>
+                        repeat: {formSectionDef?.repeatableMin ?? "undef"}-
+                        {formSectionDef?.repeatableMax ?? "undef"} ({repeatable ? "repeatable" : "single"})
+                    </div>)}
+                    {formSectionDef?.description ?? "--NEPOPSÁN--"}
 
-                <div>
-                    {sectionInstances.map((inst, i) => (
-                        <div
-                            key={inst?.id ?? `${formSectionDef?.id}:${i}`}
-                        >
-                            <div>
-                                <strong>Instance #{i + 1}</strong> {inst?._dummy ? <em>(dummy)</em> : null}
-                            </div>
+                    <div>
+                        {sectionInstances.map((inst, i) => (
+                            <div key={inst?.id ?? `${formSectionDef?.id}:${i}`} >
+                                {(mode === "design") && (<div>
+                                    <strong>Instance #{i + 1}</strong> {inst?._dummy ? <em>(dummy)</em> : null}
+                                </div>)}
 
-                            {/* Fields (nested in this section definition) */}
-                            <div>
-                                {(formSectionDef?.fields ?? []).length === 0 ? (
-                                    <div style={{ opacity: 0.7 }}>— no fields —</div>
-                                ) : (
-                                    (formSectionDef?.fields ?? []).map((fieldDef) => (
-                                        <UpdateField
-                                            key={fieldDef?.id}
-                                            sectionDef={formSectionDef}
-                                            sectionInstance={inst}
-                                            fieldDef={fieldDef}
-                                            mode={mode}
+                                {/* Fields (nested in this section definition) */}
+                                <div>
+                                    {(formSectionDef?.fields ?? []).length === 0 ? (
+                                        <div style={{ opacity: 0.7 }}>— no fields —</div>
+                                    ) : (
+                                        (formSectionDef?.fields ?? []).map((fieldDef) => (
+                                            <UpdateField
+                                                key={fieldDef?.id}
+                                                sectionDef={formSectionDef}
+                                                sectionInstance={inst}
+                                                fieldDef={fieldDef}
+                                                reRead={reRead}
+                                                mode={mode}
+                                                submission={submission}
+                                                onFieldValueChange={onFieldValueChange}
+                                                onRemoveField={onRemoveField}
+                                                handleFormItemDefChange={handleFormItemDefChange}
+                                            />
+                                        ))
+                                    )}
+                                </div>
+
+                                {/* Child sections recursion */}
+                                <div>
+                                    {(formSectionDef?.sections ?? []).map((childDef) => (
+                                        <UpdateFormSection
+                                            key={childDef?.id}
+                                            formSectionDef={childDef}
                                             submission={submission}
+                                            level={level + 1}
+                                            dummy={dummy}
+                                            mode={mode}
                                             onFieldValueChange={onFieldValueChange}
-                                            onRemoveField={onRemoveField}
+                                            // onAddSubSection={onAddSubSection}
+                                            // onRemoveSection={onRemoveSection}
+                                            // onAddField={onAddField}
+                                            // onRemoveField={onRemoveField}
                                             handleFormItemDefChange={handleFormItemDefChange}
                                         />
-                                    ))
-                                )}
-                            </div>
+                                    ))}
+                                </div>
 
-                            {/* Child sections recursion */}
-                            <div>
-                                {(formSectionDef?.sections ?? []).map((childDef) => (
-                                    <UpdateFormSection
-                                        key={childDef?.id}
-                                        formSectionDef={childDef}
-                                        submission={submission}
-                                        level={level + 1}
-                                        dummy={dummy}
-                                        mode={mode}
-                                        onFieldValueChange={onFieldValueChange}
-                                        onAddSubSection={onAddSubSection}
-                                        onRemoveSection={onRemoveSection}
-                                        onAddField={onAddField}
-                                        onRemoveField={onRemoveField}
-                                        handleFormItemDefChange={handleFormItemDefChange}
-                                    />
-                                ))}
+                                {/* TODO: repeatable UI (add/remove instances) */}
                             </div>
-
-                            {/* TODO: repeatable UI (add/remove instances) */}
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
-            </div>
-        </SimpleCardCapsule>
+            </SimpleCardCapsule>
+        </AsyncActionProvider>
     );
 };
 
@@ -599,22 +669,25 @@ export const UpdateForm = ({
     onPersist = () => { }, // ({formDef, submission, meta}) => void (debounced)
 }) => {
     // Master states
-    const [formDef, setFormDef] = useState(() => deepClone(initialFormDef ?? {}));
+    const [_, setFormDef] = useState(() => deepClone(initialFormDef ?? {}));
+    const formDef = initialFormDef
     const [mode, setMode] = useState("design")
     const [submission, setSubmission] = useState(() => ({
         ...(deepClone(initialSubmission ?? {})),
         sections: initialSubmission?.sections ?? [],
         fields: initialSubmission?.fields ?? [],
     }));
-
-    const persistDebounced = useDebouncedCallback((nextFormDef, nextSubmission, meta) => {
+    // useEffect(()=>{
+    //     setFormDef(()=>deepClone(initialFormDef ?? {}))
+    // },[initialFormDef, setFormDef])
+    const persistDebounced = useCallback(useDebouncedCallback((nextFormDef, nextSubmission, meta) => {
         onPersist({ formDef: nextFormDef, submission: nextSubmission, meta });
-    }, 700);
+    }, 700), [useDebouncedCallback, onPersist]);
 
     /** ---------------------------
      *  Value changes (filling)
      * --------------------------- */
-    const handleFieldValueChange = (sectionDef, sectionInstance, fieldDef, nextValue) => {
+    const handleFieldValueChange = useCallback((sectionDef, sectionInstance, fieldDef, nextValue) => {
         setSubmission((prev) => {
             // ensure section instance exists in submission and has an id
             const { nextSubmission, ensuredSection } = ensureSectionInstanceInSubmission(prev, sectionInstance, sectionDef);
@@ -634,14 +707,14 @@ export const UpdateForm = ({
             persistDebounced(formDef, next, meta);
             return next;
         });
-    };
+    }, [setSubmission, ensureSectionInstanceInSubmission, onSubmissionChange, persistDebounced]);
 
     /** ---------------------------
      *  Designer changes (structure)
      * --------------------------- */
 
     // Add subsection under a section definition (by id)
-    const handleAddSubSection = (parentSectionDefId) => {
+    const handleAddSubSection = useCallback((parentSectionDefId) => {
         setFormDef((prev) => {
             const next = deepClone(prev);
 
@@ -672,10 +745,10 @@ export const UpdateForm = ({
             persistDebounced(next, submission, meta);
             return next;
         });
-    };
+    }, [setFormDef, deepClone, mutateSectionTree, makeClientId, onFormDefinitionChange, persistDebounced]);
 
     // Add field into a section definition (by id)
-    const handleAddField = (sectionDefId) => {
+    const handleAddField = useCallback((sectionDefId) => {
         setFormDef((prev) => {
             const next = deepClone(prev);
 
@@ -703,10 +776,10 @@ export const UpdateForm = ({
             persistDebounced(next, submission, meta);
             return next;
         });
-    };
+    }, [setFormDef, deepClone, mutateSectionTree, makeClientId, onFormDefinitionChange, persistDebounced]);
 
     // Remove section definition (and cleanup submission linked to that sectionDef and descendants)
-    const handleRemoveSection = (sectionDefId) => {
+    const handleRemoveSection = useCallback((sectionDefId) => {
         // Find the section node first to know descendants
         const sectionNode = findSectionDefById(formDef?.sections ?? [], sectionDefId);
         const idsToRemove = sectionNode ? collectSectionDefIds(sectionNode) : new Set([sectionDefId]);
@@ -745,10 +818,10 @@ export const UpdateForm = ({
             persistDebounced(formDef, next, meta);
             return next;
         });
-    };
+    }, [persistDebounced, onSubmissionChange, getSectionIdFromSubmissionField, getFormSectionIdFromSubmissionSection, setSubmission, findSectionDefById, collectSectionDefIds, setFormDef, deepClone, removeSectionFromTree, onFormDefinitionChange, persistDebounced]);
 
     // Remove field definition (and cleanup submission field values for that field)
-    const handleRemoveField = (fieldDefId) => {
+    const handleRemoveField = useCallback((fieldDefId) => {
         setFormDef((prev) => {
             const next = deepClone(prev);
             next.sections = removeFieldFromTree(next.sections ?? [], fieldDefId);
@@ -772,10 +845,10 @@ export const UpdateForm = ({
             persistDebounced(formDef, next, meta);
             return next;
         });
-    };
+    }, [setSubmission, getFieldIdFromSubmissionField, onSubmissionChange, persistDebounced, setFormDef, deepClone, removeFieldFromTree, onFormDefinitionChange]);
 
 
-    const handleFormItemDefChange = (id, attributeName, attributeValue) => {
+    const handleFormItemDefChange = useCallback((id, attributeName, attributeValue) => {
         setFormDef((prev) => {
             const seen = new WeakSet();
 
@@ -826,79 +899,55 @@ export const UpdateForm = ({
 
             return traverse(prev);
         });
-    };
+    }, [setFormDef]);
 
+    const { 
+        run: insertSection, error: errorInsertSection, loading: creatingSection, 
+        // entity, data 
+    } = useAsyncThunkAction(InsertSectionAsyncAction, empty, {deferred: true})
+    
+    const handleCreate = useCallback(async () => {
+        const sectionid = crypto.randomUUID()
+        const result = await insertSection({
+            id: sectionid,
+            formId: initialFormDef?.id,
+            name: `sekce`,
+            label: 'Sekce',
+            repeatable: false,
+            repeatableMin: 1,
+            repeatableMax: 1,
+            fields: [{
+                id: crypto.randomUUID(),
+                name: "field",
+                label: "Položka"
+            }]
+        })
+        console.log(result)
+        return result
+    }, [insertSection])
+
+    // const handleCreate = () => null
     /** ---------------------------
      *  Render
      * --------------------------- */
     return (
         <Row>
             <Col>
-                <SimpleCardCapsule title={<>
-                    {formDef?.name ?? "Form"}
-                </>}>
+                <SimpleCardCapsule title={formDef?.name ?? "Form"}>
                     <SimpleCardCapsuleRightCorner>
-
-                        <DeleteButton
+                        {mode==='design'&&(<ConfirmClickButton 
+                            onClick={handleCreate}
                             className="btn btn-sm border-0"
-                            type="button"
-                            onClick={() => {
-                                // add top-level section
-                                const newId = makeClientId();
-                                setFormDef((prev) => {
-                                    const next = deepClone(prev);
-                                    next.sections = next.sections ?? [];
-                                    next.sections.push({
-                                        __typename: "DigitalFormSectionGQLModel",
-                                        id: newId,
-                                        name: "NewTopSection",
-                                        label: "Nová top sekce",
-                                        labelEn: null,
-                                        description: null,
-                                        sections: [],
-                                        fields: [],
-                                        repeatableMin: 0,
-                                        repeatableMax: 1,
-                                        repeatable: false,
-                                        order: (next.sections?.length ?? 0) + 1,
-                                    });
-
-                                    const meta = { kind: "form.topSectionAdded", sectionId: newId };
-                                    onFormDefinitionChange(next, meta);
-                                    persistDebounced(next, submission, meta);
-                                    return next;
-                                });
-                            }}
                         >
-                            + top sekce
-                        </DeleteButton>
+                            + Sekce
+                        </ConfirmClickButton>)}
                         <button className="btn btn-success btn-sm border-0" onClick={() => setMode(prev => prev==='design'?'view':'design')}>
                             {mode==='design'?'design':'view'}
                         </button>
                     </SimpleCardCapsuleRightCorner>
 
-                    <h1>
-                        <WrapWithDialog
-                            id={formDef?.id}
-                            name="name"
-                            value={formDef?.name}
-                            onChange={handleFormItemDefChange}
-                        >
-                            {formDef?.name ?? "Form"}
-                        </WrapWithDialog>
-                    </h1>
-
-                    {formDef?.description && (<div>
-                        <WrapWithDialog
-                            id={formDef?.id}
-                            name="description"
-                            value={formDef?.description}
-                            onChange={handleFormItemDefChange}
-                        >
-                            {formDef.description}
-                        </WrapWithDialog>
-                    </div>)}
-
+                    <h1>{formDef?.name ?? "Form"}</h1>
+                    {formDef?.description && "--NEVYPLNĚNO--"}
                     <div>
                         {(formDef?.sections ?? []).map((secDef) => (
                             <UpdateFormSection
@@ -909,34 +958,23 @@ export const UpdateForm = ({
                                 dummy={dummy}
                                 mode={mode}
                                 onFieldValueChange={handleFieldValueChange}
-                                onAddSubSection={handleAddSubSection}
-                                onRemoveSection={handleRemoveSection}
-                                onAddField={handleAddField}
-                                onRemoveField={handleRemoveField}
-                                handleFormItemDefChange={handleFormItemDefChange}
                             />
                         ))}
                     </div>
-
-
                 </SimpleCardCapsule>
             </Col>
             {debug && (
                 <Col>
                     <SimpleCardCapsule title="Draft submission">
-                        {/* <h3>Draft submission</h3> */}
                         <pre>{JSON.stringify(submission, null, 2)}</pre>
                     </SimpleCardCapsule>
-
                     <pre>{JSON.stringify(initialFormDef, null, 2)}</pre>
                 </Col>)}
             {debug && (
                 <Col>
                     <SimpleCardCapsule title="Draft form definition">
-                        {/* <h3>Draft form definition</h3> */}
                         <pre>{JSON.stringify(formDef, null, 2)}</pre>
                     </SimpleCardCapsule>
-
                 </Col>
             )}
         </Row>

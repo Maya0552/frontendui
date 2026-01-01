@@ -66,6 +66,18 @@ fragment Large on DigitalFormGQLModel {
   ...Medium
 sections {
   ...DigitalFormSection
+  sections {
+    ...DigitalFormSection
+    sections {
+        ...DigitalFormSection
+        sections {
+            ...DigitalFormSection
+            sections {
+                ...DigitalFormSection
+            }
+        }
+    }
+    }
 }
 submissions {
   ...DigitalSubmission

@@ -53,7 +53,12 @@ fragment Medium on DigitalFormSectionGQLModel {
 const LargeFragmentStr = `
 fragment Large on DigitalFormSectionGQLModel {
   ...Medium
-  sections { ...Medium }
+  sections { 
+    ...Medium 
+    fields {
+        ...DigitalFormField
+    }
+    }
   fields {
   ...DigitalFormField
 }
@@ -63,6 +68,33 @@ fragment Large on DigitalFormSectionGQLModel {
         name
         sections {
             ...Medium
+            fields {
+                ...DigitalFormField
+            }
+            sections {
+                ...Medium
+                fields {
+                    ...DigitalFormField
+                }
+                sections {
+                    ...Medium
+                    fields {
+                        ...DigitalFormField
+                    }
+                    sections {
+                        ...Medium
+                        fields {
+                            ...DigitalFormField
+                        }
+                        sections {
+                            ...Medium
+                            fields {
+                                ...DigitalFormField
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -75,17 +107,17 @@ fragment DigitalFormField on DigitalFormFieldGQLModel {
     createdbyId
     changedbyId
     rbacobjectId
-    createdby { __typename }
-    changedby { __typename }
-    rbacobject { __typename }
+    createdby { __typename id fullname}
+    changedby { __typename id fullname }
+    rbacobject { ...RBRoles }
     name
     label
     labelEn
     description
     formSectionId
-    formSection { __typename }
+    formSection { __typename id name}
     formId
-    form { __typename }
+    form { __typename id name }
     required
     order
     computed

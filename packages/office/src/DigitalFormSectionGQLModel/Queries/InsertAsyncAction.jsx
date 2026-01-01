@@ -4,15 +4,15 @@ import { createAsyncGraphQLAction2 } from "../../../../dynamic/src/Core/createAs
 
 
 const InsertMutationStr = `
-mutation digitalFormSectionInsert($name: String, $label: String, $labelEn: String, $sectionId: UUID, $formId: UUID, $id: UUID, $repeatableMin: Int, $repeatableMax: Int, $repeatable: Boolean, $fields: [DigitalFormFieldInsertGQLModel!], $sections: [DigitalFormSectionInsertGQLModel!]) {
-  digitalFormSectionInsert(digitalFormSection: {name: $name, label: $label, labelEn: $labelEn, sectionId: $sectionId, formId: $formId, id: $id, repeatableMin: $repeatableMin, repeatableMax: $repeatableMax, repeatable: $repeatable, fields: $fields, sections: $sections}) {
+mutation digitalFormSectionInsert($name: String, $label: String, $labelEn: String, $description: String, $sectionId: UUID, $formId: UUID, $id: UUID, $repeatableMin: Int, $repeatableMax: Int, $repeatable: Boolean, $fields: [DigitalFormFieldInsertGQLModel!], $sections: [DigitalFormSectionInsertGQLModel!]) {
+  digitalFormSectionInsert(digitalFormSection: {name: $name, label: $label, labelEn: $labelEn, description: $description, sectionId: $sectionId, formId: $formId, id: $id, repeatableMin: $repeatableMin, repeatableMax: $repeatableMax, repeatable: $repeatable, fields: $fields, sections: $sections}) {
     ... on DigitalFormSectionGQLModel { ...Large }
     ... on DigitalFormSectionGQLModelInsertError { ...InsertError }
   }
 }
 
 
-fragment InsertError on DigitalFormGQLModelInsertError {
+fragment InsertError on DigitalFormSectionGQLModelInsertError {
   __typename
   msg
   failed
