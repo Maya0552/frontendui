@@ -400,10 +400,10 @@ export const UpdateField = ({
     sectionInstance,
     fieldDef,
     submission,
+    digital_submission_field,
     onFieldValueChange,
+    onSubmissionFieldChange,
     onRemoveField,
-    
-    handleFormItemDefChange = (prev) => null,
     mode = "design"
 }) => {
     const submissionField = selectSubmissionField(submission, sectionInstance, fieldDef);
@@ -420,66 +420,113 @@ export const UpdateField = ({
         })
         onRemoveField()
     }, [deleteField, onRemoveField])
-    return (
-        <AsyncActionProvider item={fieldDef} queryAsyncAction={ReadFormFieldAsyncAction} options={{ deferred: true }}>
-            <SimpleCardCapsule
-                title={<>
-                    <strong>{fieldDef?.label ?? "------------"}</strong>{" "}
-                    {(mode === "design") && <small>{fieldDef?.name ?? "------------"}</small>}{" "}
-                    {fieldDef?.required ? <strong>*</strong> : null}
-                </>}
-            >
-                {(mode === "design") &&
-                    <SimpleCardCapsuleRightCorner>
-                        {/* <DesignFieldButton 
-                            className="btn btn-sm btn-outline-primary border-0"
-                            item={fieldDef}
-                        >
-                            PencilFill
-                        </DesignFieldButton> */}
-                        
-                        {/* <UpdateButton className="btn btn-sm border-0">Pencil</UpdateButton> */}
-                        {/* <ConfirmClickButton className="btn btn-sm border-0" type="button" onClick={() => onRemoveField(fieldDef?.id)} title="Remove field">
-                            🗑
-                        </ConfirmClickButton>
-                        <DeleteFormFieldButton vectorItemsURI={null} className="btn btn-sm border-0">🗑</DeleteFormFieldButton> */}
-                        <ConfirmClickButton className="btn btn-sm border-0" type="button" onClick={handleDelete} title="Remove field">
-                            🗑
-                        </ConfirmClickButton>
 
-                    </SimpleCardCapsuleRightCorner>
-                }
-                <Input
-                    className="form-control" value={value}
-                    onChange={(e) => onFieldValueChange(sectionDef, sectionInstance, fieldDef, e.target.value)}
-                    placeholder="Enter value…"
-                />
-            </SimpleCardCapsule>
-        </AsyncActionProvider>
+    const handleChange = (e) => {
+        const id = crypto.randomUUID()
+        const newField = {
+            id,
+            ...digital_submission_field, 
+            fieldId: fieldDef?.id,
+            value: e.target.value
+        }
+        onFieldValueChange(sectionDef, sectionInstance, fieldDef, e.target.value, newField)
+        onSubmissionFieldChange(newField)
+    }
+    return (
+        <SimpleCardCapsule
+            className="border-start border-2 border-success"
+            title={<>
+                <strong>{fieldDef?.label ?? "------------"}</strong>{" "}
+                {(mode === "design") && <small>{fieldDef?.name ?? "------------"}</small>}{" "}
+                {fieldDef?.required ? <strong>*</strong> : null}
+            </>}
+            style={{ paddingLeft: 12, border: "none", borderLeftx: "2px solid #3a7900ff", }}
+        >
+            {(mode === "design") &&
+                <SimpleCardCapsuleRightCorner>
+                    <ConfirmClickButton className="btn btn-sm border-0" type="button" onClick={handleDelete} title="Remove field">
+                        🗑
+                    </ConfirmClickButton>
+                </SimpleCardCapsuleRightCorner>
+            }
+            {/* {JSON.stringify(fieldDef)}
+            <hr/>
+            {JSON.stringify(sectionInstance)} */}
+            
+            <Input
+                className="form-control" value={digital_submission_field?.value || value}
+                onChange={handleChange}
+                placeholder="Enter value…"
+            />
+        </SimpleCardCapsule>
     );
 };
 
 const empty = {}
+const dummy = ()=>{}
 export const UpdateFormSection = ({
     formSectionDef,
     submission,
     level = 2,
     dummy = true,
     mode = "design",
-    // value events
-    onFieldValueChange,
 
+    digital_submission_section=empty,
+    // value events
+    onFieldValueChange=dummy,
+    onSubmissionSectionChange=dummy,//onSubmissionSectionChange
     // // design events
     // onAddSubSection,
     // onRemoveSection,
     // onAddField,
     // onRemoveField,
-    handleFormItemDefChange
+    handleFormItemDefChange=dummy
 }) => {
     const sectionInstances = useMemo(
         () => selectSubmissionSections(submission, formSectionDef, dummy),
         [submission, formSectionDef, dummy]
     );
+    const handleSubmissionFieldChange = useCallback((submission_field) => {
+        const digital_submission_section_id = crypto.randomUUID()
+        const new_section = {
+            id: digital_submission_section_id,
+            ...digital_submission_section, 
+            fields: digital_submission_section?.fields || []
+        }
+        const new_submission_field = {
+            ...submission_field,
+            sectionId: new_section.id
+        }
+        const hasField = new_section.fields.find(
+            f => (f?.id === submission_field?.id)
+        )
+        if (hasField)
+            new_section.fields = new_section.fields.map(
+                f => (f?.id === submission_field?.id)?new_submission_field:f
+            )
+        else 
+            new_section.fields.push(new_submission_field)
+        // console.log("handleSubmissionFieldChange", new_section)
+        onSubmissionSectionChange(new_section)
+    }, [submission])
+
+    const handleSubmissionSectionChange = useCallback((submission_section) => {
+        const digital_submission_section_id = crypto.randomUUID()
+        submission_section.sectionId = digital_submission_section?.id || digital_submission_section_id
+        const new_section = {
+            id: digital_submission_section_id, 
+            ...digital_submission_section, 
+            sections: digital_submission_section?.sections || []
+        }
+        const hasSection = new_section.sections.find(s => s?.id === submission_section?.id)
+        if (hasSection)
+            new_section.sections = new_section.sections.map(
+                s => (s?.id === submission_section?.id)?submission_section:s
+            )
+        else 
+            new_section.sections.push(submission_section)
+        onSubmissionSectionChange(new_section)
+    }, [submission])
 
     const max = formSectionDef?.repeatableMax ?? 1;
     const repeatable = formSectionDef?.repeatable ?? (max > 1);
@@ -570,9 +617,12 @@ export const UpdateFormSection = ({
             <AsyncStateIndicator error={errorDeleteField} loading={deletingField} text="Odstraňuji položku" />
 
             <SimpleCardCapsule title={<>
-                {(mode === "design") && (<>{formSectionDef?.label ?? formSectionDef?.name}{" "}</>)}
-                {(mode === "design") && <small>({formSectionDef?.name})</small>}
-            </>} style={{ paddingLeft: 12, borderLeft: "2px solid #e02222ff" }}>
+                    {(mode === "design") && (<>{formSectionDef?.label ?? formSectionDef?.name}{" "}</>)}
+                    {(mode === "design") && <small>({formSectionDef?.name})</small>}
+                </>} 
+                // className="border-start border-danger ps-3"
+                style={{ paddingLeft: 12, borderLeft: "2px solid #e02222ff" }}
+            >
                 {(mode === "design") &&
                     <SimpleCardCapsuleRightCorner>
                         <DesignSectionButton
@@ -610,41 +660,63 @@ export const UpdateFormSection = ({
                                     {(formSectionDef?.fields ?? []).length === 0 ? (
                                         <div style={{ opacity: 0.7 }}>— no fields —</div>
                                     ) : (
-                                        (formSectionDef?.fields ?? []).map((fieldDef) => (
-                                            <UpdateField
-                                                key={fieldDef?.id}
-                                                sectionDef={formSectionDef}
-                                                sectionInstance={inst}
-                                                fieldDef={fieldDef}
-                                                reRead={reRead}
-                                                mode={mode}
-                                                submission={submission}
-                                                onFieldValueChange={onFieldValueChange}
-                                                onRemoveField={onRemoveField}
-                                                handleFormItemDefChange={handleFormItemDefChange}
-                                            />
-                                        ))
+                                        (formSectionDef?.fields ?? []).map((fieldDef) =>{
+                                            const { fields } = digital_submission_section
+                                            const digital_submission_field = fields.find(f => f?.fieldId === fieldDef?.id)
+                                            const newField = {
+                                                id: crypto.randomUUID(),
+                                                sectionId: digital_submission_section?.id,
+                                                submissionId: digital_submission_section?.submissionId,
+                                                fieldId: fieldDef?.id,
+                                                value: ""
+                                            }
+                                            if (!digital_submission_field) {
+                                                handleSubmissionFieldChange(newField)
+                                            }
+                                            return (
+                                                <UpdateField
+                                                    key={fieldDef?.id}
+                                                    sectionDef={formSectionDef}
+                                                    sectionInstance={inst}
+                                                    fieldDef={fieldDef}
+                                                    reRead={reRead}
+                                                    mode={mode}
+                                                    submission={submission}
+                                                    onSubmissionFieldChange={handleSubmissionFieldChange}
+                                                    digital_submission_field={digital_submission_field || newField}
+                                                    onFieldValueChange={onFieldValueChange}
+                                                    onRemoveField={onRemoveField}
+                                                    handleFormItemDefChange={handleFormItemDefChange}
+                                                />
+                                            )
+                                        })
                                     )}
                                 </div>
 
                                 {/* Child sections recursion */}
                                 <div>
-                                    {(formSectionDef?.sections ?? []).map((childDef) => (
-                                        <UpdateFormSection
-                                            key={childDef?.id}
-                                            formSectionDef={childDef}
-                                            submission={submission}
-                                            level={level + 1}
-                                            dummy={dummy}
-                                            mode={mode}
-                                            onFieldValueChange={onFieldValueChange}
-                                            // onAddSubSection={onAddSubSection}
-                                            // onRemoveSection={onRemoveSection}
-                                            // onAddField={onAddField}
-                                            // onRemoveField={onRemoveField}
-                                            handleFormItemDefChange={handleFormItemDefChange}
-                                        />
-                                    ))}
+                                    {(formSectionDef?.sections ?? []).map((childDef) => {
+                                        const { sections } = digital_submission_section
+                                        const digital_submission_sections = sections.filter(s => s?.formSectionId === childDef?.id) || []
+                                        return (
+                                            <UpdateSectionWrap
+                                                key={childDef?.id}
+                                                formSectionDef={childDef}
+                                                submission={submission}
+                                                level={level + 1}
+                                                dummy={dummy}
+                                                mode={mode}
+                                                digital_submission_sections={digital_submission_sections}
+                                                onSubmissionSectionChange={handleSubmissionSectionChange}
+                                                onFieldValueChange={onFieldValueChange}
+                                                // onAddSubSection={onAddSubSection}
+                                                // onRemoveSection={onRemoveSection}
+                                                // onAddField={onAddField}
+                                                // onRemoveField={onRemoveField}
+                                                handleFormItemDefChange={handleFormItemDefChange}
+                                            />
+                                        )
+                                    })}
                                 </div>
 
                                 {/* TODO: repeatable UI (add/remove instances) */}
@@ -657,6 +729,27 @@ export const UpdateFormSection = ({
     );
 };
 
+const UpdateSectionWrap = ({
+    digital_submission_sections,
+    ...props
+}) => {
+    const { formSectionDef } = props
+    if (digital_submission_sections.length === 0) {
+        return <UpdateFormSection {...props} digital_submission_section={{
+            id: crypto.randomUUID(),
+            formSectionId: formSectionDef?.id,
+            sections: [],
+            fields: []
+        }}/>
+    }
+    return (<>
+        {digital_submission_sections.map(
+            digital_submission_section => <UpdateFormSection {...props} digital_submission_section={digital_submission_section}/>
+        )}
+    </>)
+}
+
+const dummyFunc = () => {}
 export const UpdateForm = ({
     item: initialFormDef,
     submission: initialSubmission,
@@ -664,9 +757,9 @@ export const UpdateForm = ({
     debug = true,
 
     /** Event hooks for your GraphQL mutations */
-    onFormDefinitionChange = () => { }, // (nextFormDef, meta) => void
-    onSubmissionChange = () => { }, // (nextSubmission, meta) => void
-    onPersist = () => { }, // ({formDef, submission, meta}) => void (debounced)
+    onFormDefinitionChange = dummyFunc, // (nextFormDef, meta) => void
+    onSubmissionChange = dummyFunc, // (nextSubmission, meta) => void
+    onPersist = dummyFunc, // ({formDef, submission, meta}) => void (debounced)
 }) => {
     // Master states
     const [_, setFormDef] = useState(() => deepClone(initialFormDef ?? {}));
@@ -676,12 +769,16 @@ export const UpdateForm = ({
         ...(deepClone(initialSubmission ?? {})),
         sections: initialSubmission?.sections ?? [],
         fields: initialSubmission?.fields ?? [],
+        ds: [],
     }));
+
+    const [S, setS] = useState({})
     // useEffect(()=>{
     //     setFormDef(()=>deepClone(initialFormDef ?? {}))
     // },[initialFormDef, setFormDef])
     const persistDebounced = useCallback(useDebouncedCallback((nextFormDef, nextSubmission, meta) => {
         onPersist({ formDef: nextFormDef, submission: nextSubmission, meta });
+        console.log("handleFieldValueChange", nextSubmission)
     }, 700), [useDebouncedCallback, onPersist]);
 
     /** ---------------------------
@@ -702,204 +799,36 @@ export const UpdateForm = ({
                 fieldId: fieldDef?.id,
                 value: nextValue,
             };
-
+            
             onSubmissionChange(next, meta);
             persistDebounced(formDef, next, meta);
             return next;
         });
     }, [setSubmission, ensureSectionInstanceInSubmission, onSubmissionChange, persistDebounced]);
 
+    const handleSubmissionSectionChange = useCallback((submission_section) => {
+        setSubmission(prev=>{
+            const {ds=[]} = prev
+            const has = ds.find( s => s?.id === submission_section?.id)
+            if (has) {
+                const newds = ds.map(s => (s?.id === submission_section?.id)?submission_section:s)
+                return {
+                    ...prev, 
+                    ds: newds
+                }
+            } else {
+                return {
+                    ...prev, 
+                    ds: [...ds, submission_section]
+                }
+            }
+        })
+        console.log(submission_section)
+    }, [])
     /** ---------------------------
      *  Designer changes (structure)
      * --------------------------- */
 
-    // Add subsection under a section definition (by id)
-    const handleAddSubSection = useCallback((parentSectionDefId) => {
-        setFormDef((prev) => {
-            const next = deepClone(prev);
-
-            next.sections = mutateSectionTree(
-                next.sections ?? [],
-                (s) => s?.id === parentSectionDefId,
-                (s) => {
-                    s.sections = s.sections ?? [];
-                    s.sections.push({
-                        __typename: "DigitalFormSectionGQLModel",
-                        id: makeClientId(),
-                        name: "NewSection",
-                        label: "Nová sekce",
-                        labelEn: null,
-                        description: null,
-                        sections: [],
-                        fields: [],
-                        repeatableMin: 0,
-                        repeatableMax: 1,
-                        repeatable: false,
-                        order: (s.sections?.length ?? 0) + 1,
-                    });
-                }
-            );
-
-            const meta = { kind: "form.sectionAdded", parentSectionId: parentSectionDefId };
-            onFormDefinitionChange(next, meta);
-            persistDebounced(next, submission, meta);
-            return next;
-        });
-    }, [setFormDef, deepClone, mutateSectionTree, makeClientId, onFormDefinitionChange, persistDebounced]);
-
-    // Add field into a section definition (by id)
-    const handleAddField = useCallback((sectionDefId) => {
-        setFormDef((prev) => {
-            const next = deepClone(prev);
-
-            next.sections = mutateSectionTree(
-                next.sections ?? [],
-                (s) => s?.id === sectionDefId,
-                (s) => {
-                    s.fields = s.fields ?? [];
-                    s.fields.push({
-                        __typename: "DigitalFormFieldGQLModel",
-                        id: makeClientId(),
-                        name: "NewField",
-                        label: "Nové pole",
-                        labelEn: null,
-                        description: null,
-                        required: false,
-                        typeId: "text",
-                        order: (s.fields?.length ?? 0) + 1,
-                    });
-                }
-            );
-
-            const meta = { kind: "form.fieldAdded", sectionId: sectionDefId };
-            onFormDefinitionChange(next, meta);
-            persistDebounced(next, submission, meta);
-            return next;
-        });
-    }, [setFormDef, deepClone, mutateSectionTree, makeClientId, onFormDefinitionChange, persistDebounced]);
-
-    // Remove section definition (and cleanup submission linked to that sectionDef and descendants)
-    const handleRemoveSection = useCallback((sectionDefId) => {
-        // Find the section node first to know descendants
-        const sectionNode = findSectionDefById(formDef?.sections ?? [], sectionDefId);
-        const idsToRemove = sectionNode ? collectSectionDefIds(sectionNode) : new Set([sectionDefId]);
-
-        setFormDef((prev) => {
-            const next = deepClone(prev);
-            // remove only the root id; descendants removed automatically by subtree removal
-            next.sections = removeSectionFromTree(next.sections ?? [], sectionDefId);
-
-            const meta = { kind: "form.sectionRemoved", sectionId: sectionDefId, descendantSectionIds: Array.from(idsToRemove) };
-            onFormDefinitionChange(next, meta);
-            // persist will happen after submission cleanup too, but ok to call here as well
-            persistDebounced(next, submission, meta);
-            return next;
-        });
-
-        // cleanup submission: remove section instances whose formSectionId is in idsToRemove, plus their fields
-        setSubmission((prev) => {
-            const prevSections = prev.sections ?? [];
-            const removedSectionInstanceIds = new Set(
-                prevSections.filter((ss) => idsToRemove.has(getFormSectionIdFromSubmissionSection(ss))).map((ss) => ss.id)
-            );
-
-            const nextSections = prevSections.filter((ss) => !idsToRemove.has(getFormSectionIdFromSubmissionSection(ss)));
-
-            const nextFields = (prev.fields ?? []).filter((sf) => !removedSectionInstanceIds.has(getSectionIdFromSubmissionField(sf)));
-
-            const next = { ...prev, sections: nextSections, fields: nextFields };
-
-            const meta = {
-                kind: "submission.cleanedAfterSectionRemoved",
-                removedFormSectionIds: Array.from(idsToRemove),
-                removedSubmissionSectionIds: Array.from(removedSectionInstanceIds),
-            };
-            onSubmissionChange(next, meta);
-            persistDebounced(formDef, next, meta);
-            return next;
-        });
-    }, [persistDebounced, onSubmissionChange, getSectionIdFromSubmissionField, getFormSectionIdFromSubmissionSection, setSubmission, findSectionDefById, collectSectionDefIds, setFormDef, deepClone, removeSectionFromTree, onFormDefinitionChange, persistDebounced]);
-
-    // Remove field definition (and cleanup submission field values for that field)
-    const handleRemoveField = useCallback((fieldDefId) => {
-        setFormDef((prev) => {
-            const next = deepClone(prev);
-            next.sections = removeFieldFromTree(next.sections ?? [], fieldDefId);
-
-            const meta = { kind: "form.fieldRemoved", fieldId: fieldDefId };
-            onFormDefinitionChange(next, meta);
-            persistDebounced(next, submission, meta);
-            return next;
-        });
-
-        setSubmission((prev) => {
-            const nextFields = (prev.fields ?? []).filter((sf) => getFieldIdFromSubmissionField(sf) !== fieldDefId);
-            const nextSections = (prev.sections ?? []).map((ss) => ({
-                ...ss,
-                fields: (ss.fields ?? []).filter((sf) => getFieldIdFromSubmissionField(sf) !== fieldDefId),
-            }));
-
-            const next = { ...prev, fields: nextFields, sections: nextSections };
-            const meta = { kind: "submission.cleanedAfterFieldRemoved", fieldId: fieldDefId };
-            onSubmissionChange(next, meta);
-            persistDebounced(formDef, next, meta);
-            return next;
-        });
-    }, [setSubmission, getFieldIdFromSubmissionField, onSubmissionChange, persistDebounced, setFormDef, deepClone, removeFieldFromTree, onFormDefinitionChange]);
-
-
-    const handleFormItemDefChange = useCallback((id, attributeName, attributeValue) => {
-        setFormDef((prev) => {
-            const seen = new WeakSet();
-
-            const traverse = (node) => {
-                // primitives / null
-                if (node == null || typeof node !== "object") return node;
-
-                // guard against cycles (just in case)
-                if (seen.has(node)) return node;
-                seen.add(node);
-
-                // arrays
-                if (Array.isArray(node)) {
-                    let changed = false;
-                    const nextArr = node.map((child) => {
-                        const nextChild = traverse(child);
-                        if (nextChild !== child) changed = true;
-                        return nextChild;
-                    });
-                    return changed ? nextArr : node;
-                }
-
-                // objects
-                if (node.id === id) {
-                    // no-op -> keep same ref
-                    if (node[attributeName] === attributeValue) return node;
-                    return { ...node, [attributeName]: attributeValue };
-                }
-
-                // traverse object properties; only clone if something changed
-                let changed = false;
-                let nextObj = node;
-
-                for (const key of Object.keys(node)) {
-                    const child = node[key];
-                    const nextChild = traverse(child);
-                    if (nextChild !== child) {
-                        if (!changed) {
-                            changed = true;
-                            nextObj = { ...node }; // clone lazily
-                        }
-                        nextObj[key] = nextChild;
-                    }
-                }
-
-                return nextObj;
-            };
-
-            return traverse(prev);
-        });
-    }, [setFormDef]);
 
     const { 
         run: insertSection, error: errorInsertSection, loading: creatingSection, 
@@ -949,22 +878,31 @@ export const UpdateForm = ({
                     <h1>{formDef?.name ?? "Form"}</h1>
                     {formDef?.description && "--NEVYPLNĚNO--"}
                     <div>
-                        {(formDef?.sections ?? []).map((secDef) => (
-                            <UpdateFormSection
-                                key={secDef?.id}
-                                formSectionDef={secDef}
-                                submission={submission}
-                                level={2}
-                                dummy={dummy}
-                                mode={mode}
-                                onFieldValueChange={handleFieldValueChange}
-                            />
-                        ))}
+                        {(formDef?.sections ?? []).map((secDef) => {
+                            const digital_submission_sections = 
+                                submission?.ds?.filter(s=> s?.formSectionId === secDef?.id) || [] 
+                            return (
+                                <UpdateSectionWrap 
+                                    digital_submission_sections={digital_submission_sections}
+                                    onSubmissionSectionChange={handleSubmissionSectionChange}
+                                    key={secDef?.id}
+                                    formSectionDef={secDef}
+                                    submission={submission}
+                                    level={2}
+                                    dummy={dummy}
+                                    mode={mode}
+                                    onFieldValueChange={handleFieldValueChange}
+                                />
+                            )
+                        })}
                     </div>
                 </SimpleCardCapsule>
             </Col>
             {debug && (
                 <Col>
+                    <SimpleCardCapsule title="Draft submission">
+                        <pre>{JSON.stringify(submission?.ds, null, 2)}</pre>
+                    </SimpleCardCapsule>
                     <SimpleCardCapsule title="Draft submission">
                         <pre>{JSON.stringify(submission, null, 2)}</pre>
                     </SimpleCardCapsule>
