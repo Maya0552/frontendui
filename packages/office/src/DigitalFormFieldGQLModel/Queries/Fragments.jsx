@@ -58,28 +58,40 @@ fragment Large on DigitalFormFieldGQLModel  {
   ...Medium
   
     formSection {
-    __typename
-    id
-    name
+    ...LSection
     }
 
     form {
-    __typename
-    id
-    name
+    ...LForm
     }
 }
 
-fragment LSection on {
-    __typename
-    id
-    name
+fragment LSection on DigitalFormSectionGQLModel {
+  __typename
+  id
+  lastchange
+  created
+  createdbyId
+  changedbyId
+  rbacobjectId
+  name
+  path
+  label
+  labelEn
+  description
+  sectionId
+  formId
+  order
+  repeatableMin
+  repeatableMax
+  repeatable    
+
     fields {
         ...Medium
     }
 }
 
-fragment LForm on {
+fragment LForm on DigitalFormGQLModel {
     __typename
     id
     name

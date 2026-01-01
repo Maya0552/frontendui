@@ -4,28 +4,15 @@ import { createAsyncGraphQLAction2 } from "../../../../dynamic/src/Core/createAs
 
 
 const InsertMutationStr = `
-mutation roleTypeInsert(
-	$mastertypeId: UUID # null, 
-	$id: UUID # null, 
-	$name: String # null, 
-	$nameEn: String # null, 
-	$subtypes: [RoleTypeInsertGQLModel!] # null
-) {
-  roleTypeInsert(
-	roleType: {
-	mastertypeId: $mastertypeId, 
-	id: $id, 
-	name: $name, 
-	nameEn: $nameEn, 
-	subtypes: $subtypes}
-  ) {
-    ... on InsertError { ...InsertError }
-    ... on RoleTypeGQLModel { ...Large }
+mutation digitalFormFieldInsert($formId: UUID, $typeId: UUID, $formSectionId: UUID, $id: UUID, $name: String, $label: String, $labelEn: String, $description: String, $required: Boolean, $order: Int, $computed: Int) {
+  digitalFormFieldInsert(formField: {formId: $formId, typeId: $typeId, formSectionId: $formSectionId, id: $id, name: $name, label: $label, labelEn: $labelEn, description: $description, required: $required, order: $order, computed: $computed}) {
+    ... on DigitalFormFieldGQLModel { ...Large }
+    ... on DigitalFormFieldGQLModelInsertError { ...InsertError }
   }
 }
 
 
-fragment InsertError on InsertError {
+fragment InsertError on DigitalFormFieldGQLModelInsertError {
   __typename
   msg
   failed
