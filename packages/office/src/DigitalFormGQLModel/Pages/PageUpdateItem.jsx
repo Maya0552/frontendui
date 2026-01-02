@@ -451,6 +451,42 @@ export const UpdateFormSectionFields = ({
     </>)
 }
 
+const UpdateFormSectionSections = ({
+    formSections = [],
+    submissionSections = [],
+    level,
+    dummy,
+    mode,
+    onSubmissionSectionChange,
+}) => {
+    const formSectionsSorted = (formSections || []).toSorted((a, b) => (a?.order || 0) - (b?.order || 0))
+    const submissionSectionsSorted = (submissionSections || []).toSorted((a, b) => (a?.order || 0) - (b?.order || 0))
+    return (
+        <>
+            {formSectionsSorted.map((form_section) => {
+                const filtered = submissionSectionsSorted.filter(
+                    (s) => s?.formSectionId === form_section?.id
+                )
+                const include_add_section_button = form_section?.repeatableMax > filtered.length
+                return (
+                    <div key={form_section?.id}>
+                        <UpdateSectionWrap
+                            key={form_section?.id}
+                            formSectionDef={form_section}
+                            level={level + 1}
+                            dummy={dummy}
+                            mode={mode}
+                            digital_submission_sections={filtered}
+                            onSubmissionSectionChange={onSubmissionSectionChange}
+                        />
+                        {include_add_section_button && <button className="form-control btn btn-outline-primary">+</button>}
+                    </div>
+                )
+            })}
+        </>
+    )
+}
+
 
 export const UpdateFormSection = ({
     formSectionDef,
@@ -677,28 +713,14 @@ export const UpdateFormSection = ({
                             onRemoveField={onRemoveField}
                             onSubmissionFieldChange={handleSubmissionFieldChange}
                         />
-                        
-                        {(formSectionDef?.sections || []).map(
-                            form_section => {
-                                const submissionsections = digital_submission_section?.sections || []
-                                const filtered = submissionsections.filter(
-                                    s => s?.formSectionId === form_section?.id
-                                )
-                                const include_add_section_button = form_section?.repeatableMax > filtered.length
-                                return (<div key={form_section?.id}>
-                                    <UpdateSectionWrap
-                                        key={form_section?.id}
-                                        formSectionDef={form_section}
-                                        level={level + 1}
-                                        dummy={dummy}
-                                        mode={mode}
-                                        digital_submission_sections={filtered}
-                                        onSubmissionSectionChange={handleSubmissionSectionChange}
-                                    />
-                                    {include_add_section_button && <button className="form-control btn btn-outline-primary">+</button>}
-                                </div>)
-                            }
-                        )}
+                        <UpdateFormSectionSections
+                            formSections={formSectionDef?.sections || []}
+                            submissionSections={digital_submission_section?.sections || []}
+                            level={level}
+                            dummy={dummy}
+                            mode={mode}
+                            onSubmissionSectionChange={handleSubmissionSectionChange}
+                        />
                     </div>
                 </div>
             </SimpleCardCapsule>
