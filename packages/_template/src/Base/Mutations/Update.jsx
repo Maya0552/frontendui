@@ -1,148 +1,107 @@
 import { PermissionGate, usePermissionGateContext } from "../../../../dynamic/src/Hooks/useRoles"
 import { UpdateAsyncAction } from "../Queries"
 import { useEditAction } from "../../../../dynamic/src/Hooks/useEditAction"
-import { useState } from "react"
 import { LinkURI, LiveEdit, MediumEditableContent } from "../Components"
 import { useCallback } from "react"
 import { useGQLEntityContext } from "../../../../_template/src/Base/Helpers/GQLEntityProvider"
 import { useMemo } from "react"
-import { ProxyLink } from "../../../../_template/src/Base/Components/ProxyLink"
 import { AsyncStateIndicator } from "../../../../_template/src/Base/Helpers/AsyncStateIndicator"
-import { Dialog } from "../../../../_template/src/Base/FormControls/Dialog"
 import { makeMutationURI } from "./helpers"
-import { Lock } from "react-bootstrap-icons"
+import { GeneralButton, GeneralDialog, GeneralLink } from "./General"
 
 export const UpdateURI = makeMutationURI(LinkURI, "edit", { withId: true });
 
-export const UpdateLink = ({ 
-    item, 
-    preserveHash = true, 
-    preserveSearch = true, 
-    oneOfRoles=["superadmin"],
-    mode="absolute",
-    uriPattern=UpdateURI,
+export const UpdateLink = ({
+    item,
+    oneOfRoles = ["superadmin"],
+    mode = "absolute",
+    uriPattern = UpdateURI,
     children,
-    ...props 
+    ...props
 }) => {
-    return (
-        <PermissionGate oneOfRoles={oneOfRoles} mode={mode} item={item}>
-            <UpdateLinkBody
-                item={item}
-                preserveHash={preserveHash}
-                preserveSearch={preserveSearch}
-                uriPattern={uriPattern}
-                children={children}
-                {...props}
-            />
-        </PermissionGate>
-    );
-};
-
-const UpdateLinkBody = ({ 
-    item, 
-    preserveHash = true, 
-    preserveSearch = true, 
-    uriPattern=UpdateURI,
-    disabled,
-    children,
-    ...props 
-}) => {
-    const { allowed } = usePermissionGateContext()
     const to = useMemo(() => {
         const id = item?.id ?? "";
         return uriPattern.replace(":id", String(id));
     }, [uriPattern, item?.id]);
-    if (allowed) {
-        return (<>
-            <ProxyLink
-                to={to}
-                preserveHash={preserveHash}
-                preserveSearch={preserveSearch}
-                disabled={disabled}
-                {...props}
-            >
-                {children}
-            </ProxyLink>
-        </>
-    );
-    } else {
-        return (<>
-            <ProxyLink
-                to={to}
-                preserveHash={preserveHash}
-                preserveSearch={preserveSearch}
-                disabled={true}
-                {...props}
-            >
-                <Lock />
-                {children}
-            </ProxyLink>
-        </>
-    );
-    }
-};
 
+    return (
+        <GeneralLink
+            rbacitem={item}
+            oneOfRoles={oneOfRoles}
+            mode={mode}
+            uriPattern={to}
+            {...props}
+        >
+            {children}
+        </GeneralLink>
+    );
+};
 
 
 const DefaultContent = MediumEditableContent
 
-export const UpdateButton = ({ 
+export const UpdateButton = ({
     children,
-    item, 
-    mutationAsyncAction = UpdateAsyncAction, 
-    oneOfRoles=["superadmin"],
-    mode="absolute",
+    item,
+    mutationAsyncAction = UpdateAsyncAction,
+    oneOfRoles = ["superadmin"],
+    mode = "absolute",
     DefaultContent: DefaultContent_ = DefaultContent,
-    Dialog=UpdateDialog,
-    ...props 
+    Dialog = UpdateDialog,
+    uriPattern,     // u editace typicky netřeba, ale nechávám možnost
+    onOk,
+    onCancel,
+    ...props
 }) => {
     return (
-        <PermissionGate oneOfRoles={oneOfRoles} mode={mode} item={item}>
-            <UpdateButtonBody 
-                item={item}
-                mutationAsyncAction={mutationAsyncAction}
-                DefaultContent={DefaultContent_}
-                Dialog={Dialog}
-                children={children}
-                {...props}
-            />
-        </PermissionGate>
-    )
-}
-
-const UpdateButtonBody = ({
-    children,
-    item, 
-    mutationAsyncAction,
-    DefaultContent,
-    Dialog,
-    ...props 
-}) => {
-    const { allowed } = usePermissionGateContext()
-    const [visible, setVisible] = useState(false)
-    const toggle = () => setVisible(v => !v);
-    const hide = () => setVisible(v => false)
-    if (allowed) {
-        return (<>
-            <button {...props} onClick={toggle}>{children || "Editovat"}</button>
-            {visible && (
-                <Dialog 
-                    onOk={hide} 
-                    onCancel={hide} 
-                    mutationAsyncAction={mutationAsyncAction}
-                    DefaultContent={DefaultContent}
-                />
-            )}
-        </>)
-        
-    } else {
-        return <button {...props} onClick={toggle} ><Lock />{children || "Editovat"}</button>
-    }
-    
-}
+        <GeneralButton
+            rbacitem={item}
+            oneOfRoles={oneOfRoles}
+            mode={mode}
+            mutationAsyncAction={mutationAsyncAction}
+            Dialog={Dialog}
+            DefaultContent={DefaultContent_}
+            initialItem={item}
+            uriPattern={uriPattern}
+            onOk={onOk}
+            onCancel={onCancel}
+            {...props}
+        >
+            {children || "Editovat"}
+        </GeneralButton>
+    );
+};
 
 const dummyFunc = () => null
 export const UpdateDialog = ({
+    title = "Editace",
+    oklabel = "Ok",
+    cancellabel = "Zrušit",
+    DefaultContent: DefaultContent_ = DefaultContent,
+    initialItem,      // ⚠️ GeneralButton předává initialItem
+    onOk,
+    onCancel,
+    children,
+    ...props
+}) => {
+    return (
+        <GeneralDialog
+            title={title}
+            oklabel={oklabel}
+            cancellabel={cancellabel}
+            DefaultContent={DefaultContent_}
+            initialItem={initialItem}
+            onOk={onOk}
+            onCancel={onCancel}
+            {...props}
+        >
+            {children}
+        </GeneralDialog>
+    );
+};
+
+
+export const UpdateContextDialog = ({
     title = "Editace",
     oklabel = "Ok",
     cancellabel = "Zrušit",
@@ -153,67 +112,71 @@ export const UpdateDialog = ({
     children,
     ...props
 }) => {
-    const { item, onChange: contextOnChange } = useGQLEntityContext()
+    const { item, onChange: contextOnChange } = useGQLEntityContext(); // ✅ požadavek
+
     const {
-        draft,
-        onChange,
-        onBlur,
-        onCancel,
-        onConfirm,
+        loading: saving,
         error,
-        loading: saving
-    } = useEditAction(mutationAsyncAction, item, { mode: "confirm" })
+        run,
+    } = useAsyncThunkAction(mutationAsyncAction, item, { deferred: true }); // stejně jako GeneralButtonBody :contentReference[oaicite:3]{index=3}
 
-    const handleCancel_ = useCallback(async () => {
-        onCancel()
-        handleCancel()
-    }, [onCancel, handleCancel])
+    const handleOk_ = useCallback(
+        async (draft) => {
+            const result = await run(draft);
 
-    const handleConfirm = useCallback(async () => {
-        const result = await onConfirm(draft);
-        // console.log("ConfirmEdit handleConfirm result", result, "draft", draft)
-        if (result) {
-            const event = { target: { value: draft } };
-            // důležité: použij params z kontextu (provider si je drží jako "poslední vars")
-            await contextOnChange(event);
-        }
-        handleOk()
-        return result;
-    }, [onConfirm, handleOk, contextOnChange]);
+            if (result) {
+                // nejčistší je poslat do kontextu "result" (server truth),
+                // ale pokud chceš posílat draft, stačí změnit na value: draft
+                const event = { target: { value: draft } };
+                await contextOnChange(event);
+            }
+
+            handleOk(result);
+            return result;
+        },
+        [run, contextOnChange, handleOk]
+    );
+
+    const handleCancel_ = useCallback(() => {
+        handleCancel();
+    }, [handleCancel]);
+
+    if (!item) return null; // nebo <></>
 
     return (
-        <Dialog
-            title={title}
-            oklabel={oklabel}
-            cancellabel={cancellabel}
-            onCancel={handleCancel_}
-            onOk={handleConfirm}
-            {...props}
-        >
+        <>
             <AsyncStateIndicator error={error} loading={saving} text={"Ukládám"} />
-            <DefaultContent_ item={item} onChange={onChange} onBlur={onBlur}>
+            <GeneralDialog
+                title={title}
+                oklabel={oklabel}
+                cancellabel={cancellabel}
+                onOk={handleOk_}
+                onCancel={handleCancel_}
+                DefaultContent={DefaultContent_}
+                initialItem={item}
+                {...props}
+            >
                 {children}
-            </DefaultContent_>
+            </GeneralDialog>
+        </>
+    );
+};
 
-        </Dialog>
-    )
-}
-
-export const UpdateBody = ({ 
+export const UpdateBody = ({
     children,
     mutationAsyncAction = UpdateAsyncAction,
-    DefaultContent: DefaultContent_=DefaultContent,
-    oneOfRoles=["superadmin"],
-    mode="absolute"
+    DefaultContent: DefaultContent_ = DefaultContent,
+    oneOfRoles = ["superadmin"],
+    mode = "absolute"
 }) => {
     const { item } = useGQLEntityContext()
     // const { can, roleNames } = useRolePermission(item, ["administrátor"])
     if (!item) return (<>No item</>)
     return (
         <PermissionGate oneOfRoles={oneOfRoles} mode={mode} item={item}>
-            <UpdateBodyBody 
-                item={item} 
-                mutationAsyncAction={mutationAsyncAction} 
+            <UpdateBodyBody
+                item={item}
+                mutationAsyncAction={mutationAsyncAction}
                 DefaultContent={DefaultContent_}
                 children={children}
             />
@@ -221,30 +184,30 @@ export const UpdateBody = ({
     )
 }
 
-const UpdateBodyBody = ({ 
+const UpdateBodyBody = ({
     item,
     children,
     mutationAsyncAction = UpdateAsyncAction,
-    DefaultContent: DefaultContent_=DefaultContent,
+    DefaultContent: DefaultContent_ = DefaultContent,
 }) => {
     const { allowed } = usePermissionGateContext()
     // const { can, roleNames } = useRolePermission(item, ["administrátor"])
 
     if (allowed) {
         return (<>
-            <LiveEdit 
-                item={item} 
-                mutationAsyncAction={mutationAsyncAction} 
+            <LiveEdit
+                item={item}
+                mutationAsyncAction={mutationAsyncAction}
                 DefaultContent={DefaultContent_}
             />
             {children}
-    </>)
+        </>)
     } else {
         return (<>
             <div>Nemáte oprávnění</div>
         </>)
     }
-    
+
 }
 
 const onDone_ = () => null;

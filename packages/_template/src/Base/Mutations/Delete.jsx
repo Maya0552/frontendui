@@ -7,206 +7,155 @@ import { DeleteAsyncAction } from "../Queries";
 import { AsyncStateIndicator } from "../../../../_template/src/Base/Helpers/AsyncStateIndicator";
 import { useState } from "react";
 import { useCallback } from "react";
-import { ProxyLink, useLink } from "../../../../_template/src/Base/Components/ProxyLink";
 import { useMemo } from "react";
-import { Dialog } from "../../../../_template/src/Base/FormControls/Dialog";
 import { makeMutationURI } from "./helpers";
-import { Lock } from "react-bootstrap-icons";
+import { GeneralButton, GeneralDialog, GeneralLink } from "./General";
 
 
 export const DeleteURI = makeMutationURI(LinkURI, "delete", { withId: true });
 const VectorItemsURI = makeMutationURI(LinkURI, "list", { withId: false });
 const DefaultContent = MediumContent
 
-export const DeleteLink = ({ 
-    item, 
-    preserveHash = true, 
-    preserveSearch = true, 
-    oneOfRoles=["superadmin"],
-    mode="absolute",
-    uriPattern=DeleteURI,
+export const DeleteLink = ({
+    item,
+    preserveHash = true,
+    preserveSearch = true,
+    oneOfRoles = ["superadmin"],
+    mode = "absolute",
+    uriPattern = DeleteURI,
     children,
-    ...props 
+    ...props
 }) => {
-    return (
-        <PermissionGate oneOfRoles={oneOfRoles} mode={mode}>
-            <DeleteLinkBody
-                item={item}
-                preserveHash={preserveHash}
-                preserveSearch={preserveSearch}
-                uriPattern={uriPattern}
-                children={children}
-                {...props}
-            />
-        </PermissionGate>
-    );
-};
-
-const DeleteLinkBody = ({ 
-    item, 
-    preserveHash = true, 
-    preserveSearch = true, 
-    oneOfRoles=["superadmin"],
-    mode="absolute",
-    uriPattern=DeleteURI,
-    children,
-    ...props 
-}) => {
-    const { allowed } = usePermissionGateContext()
     const to = useMemo(() => {
         const id = item?.id ?? "";
         return uriPattern.replace(":id", String(id));
     }, [uriPattern, item?.id]);
-    if (allowed) {
-        return (
-            <ProxyLink
-                to={to}
-                preserveHash={preserveHash}
-                preserveSearch={preserveSearch}
-                {...props}
-            />
-        );
-    } else {
-        return (
-            <ProxyLink
-                to={to}
-                preserveHash={preserveHash}
-                preserveSearch={preserveSearch}
-                disabled={true}
-                {...props}
-            >
-                <Lock /> {children}
-            </ProxyLink>
-        );
-    }
+
+    return (
+        <GeneralLink
+            rbacitem={item}
+            oneOfRoles={oneOfRoles}
+            mode={mode}
+            uriPattern={to}
+            preserveHash={preserveHash}
+            preserveSearch={preserveSearch}
+            {...props}
+        >
+            {children}
+        </GeneralLink>
+    );
 };
 
 
-export const DeleteButton = ({ 
-    children, 
+export const DeleteButton = ({
+    children,
     item,
-    mutationAsyncAction = DeleteAsyncAction, 
-    oneOfRoles=["superadmin"],
-    mode="absolute",
-    DefaultContent: DefaultContent_ = DefaultContent,
-    vectorItemsURI=VectorItemsURI,
-    ...props 
+    mutationAsyncAction = DeleteAsyncAction,
+    oneOfRoles = ["superadmin"],
+    mode = "absolute",
+    vectorItemsURI = VectorItemsURI,
+    Dialog, // možnost override
+    onOk,
+    ...props
 }) => {
     return (
-        <PermissionGate oneOfRoles={oneOfRoles} mode={mode} item={item}>
-            <DeleteButtonBody 
-                item={item}
-                mutationAsyncAction={mutationAsyncAction}
-                DefaultContent={DefaultContent_}
-                vectorItemsURI={vectorItemsURI}
-                children={children}
-                {...props }
-            />
-            {/* {JSON.stringify(visible)} */}
-        </PermissionGate>
-    )
-}
+        <GeneralButton
+            rbacitem={item}
+            oneOfRoles={oneOfRoles}
+            mode={mode}
+            mutationAsyncAction={mutationAsyncAction}
+            Dialog={Dialog}              // default dáme níže
+            initialItem={item}
+            uriPattern={vectorItemsURI}  // po úspěchu přesměruj na list
+            onOk={onOk}
+            {...props}
+        >
+            {children || "Odstranit"}
+        </GeneralButton>
+    );
+};
 
-const DeleteButtonBody = ({ 
-    children, 
-    item,
-    mutationAsyncAction = DeleteAsyncAction, 
-    DefaultContent: DefaultContent_ = DefaultContent,
-    vectorItemsURI=VectorItemsURI,
-    ...props 
-}) => {
-    const { allowed } = usePermissionGateContext()
-    // const { can, roleNames } = useRoles(item, ["superadmin"])
-    const { follow } = useLink({ to: vectorItemsURI })
-    const [visible, setVisible] = useState(false)
-    const togleVisible = () => setVisible(prev => !prev)
-    const handleOkClick = () => {
-        setVisible(false)
-        if (vectorItemsURI)
-            follow()
-    }
-    const handleCancelClick = () => {
-        setVisible(false)
-    }
-    if (allowed) {
-        return (
-            <>
-                <button {...props} onClick={togleVisible}>{children || "Odstranit"}</button>
-                {visible && (
-                    <DeleteDialog 
-                        onOk={handleOkClick} 
-                        onCancel={handleCancelClick} 
-                        mutationAsyncAction={mutationAsyncAction}
-                        DefaultContent={DefaultContent_}
-                        vectorItemsURI={vectorItemsURI}
-                    />
-                )}
-                {/* {JSON.stringify(visible)} */}
-            </>
-        )
-    } else {
-            return (
-                <button {...props} onClick={togleVisible} disabled><Lock />{children || "Odstranit"}</button>
-        )
-    }
-}
-
-const dummyFunc = () => null
 export const DeleteDialog = ({
+    title = "Odstranit",
+    item,
+    oklabel = "Odstranit",
+    cancellabel = "Zrušit",
+    onOk,
+    onCancel,
+    DefaultContent: DefaultContent_ = DefaultContent,
+}) => {
+    // GeneralDialog očekává "initialItem" + bude volat onOk(draft)
+    // Draft tady = item, nemění se.
+    const [draft] = useState(item);
+
+    const handleOk_ = useCallback(async () => {
+        // zavoláme onOk s itemem (draftem)
+        return onOk?.(draft);
+    }, [onOk, draft]);
+
+    return (
+        <GeneralDialog
+            title={title}
+            oklabel={oklabel}
+            cancellabel={cancellabel}
+            initialItem={draft}
+            onOk={handleOk_}
+            onCancel={onCancel}
+            // DefaultContent u delete je jen "read-only"
+            DefaultContent={({ item }) => (
+                <>
+                    {/* <AsyncStateIndicator error={error} loading={saving} text={"Odstraňuji"} /> */}
+                    <DefaultContent_ item={item} />
+                </>
+            )}
+        />
+    );
+};
+
+export const DeleteDialogContext = ({
     title = "Odstranit",
 
     oklabel = "Odstranit",
     cancellabel = "Zrušit",
-    onOk: handleOk = dummyFunc,
-    onCancel: handleCancel = dummyFunc,
+    onOk: handleOk,
+    onCancel: handleCancel,
     mutationAsyncAction = DeleteAsyncAction,
-    vectorItemsURI=VectorItemsURI,
+    vectorItemsURI = VectorItemsURI,
     DefaultContent: DefaultContent_ = DefaultContent
-
 }) => {
     const {
         item,
         // onChange: contextOnChange 
     } = useGQLEntityContext()
-    const {
-        commitNow,
-        error,
-        loading: saving
-    } = useEditAction(mutationAsyncAction, item, { mode: "confirm" })
-
-    const handleConfirm = useCallback(async () => {
-        const result = await commitNow(item);
-        handleOk(result);
-
-        return result;
-    }, [commitNow, handleOk, item]);
 
     return (
-        <Dialog
+        <DeleteDialog
             title={title}
+            item={item}
             oklabel={oklabel}
             cancellabel={cancellabel}
             onCancel={handleCancel}
-            onOk={handleConfirm}
+            onOk={handleOk}
             vectorItemsURI={vectorItemsURI}
+            mutationAsyncAction={mutationAsyncAction}
         >
-            <AsyncStateIndicator error={error} loading={saving} text={"Odstraňuji"} />
+            {/* <AsyncStateIndicator error={error} loading={saving} text={"Odstraňuji"} /> */}
             <DefaultContent_ item={item} />
-        </Dialog>
+        </DeleteDialog>
     )
 }
 
-export const DeleteBody = ({ 
-    children, 
+export const DeleteBody = ({
+    children,
     mutationAsyncAction = DeleteAsyncAction,
-    DefaultContent: DefaultContent_=DefaultContent,
-    oneOfRoles=["superadmin"],
-    mode="absolute",
-    vectorItemsURI=VectorItemsURI,
+    DefaultContent: DefaultContent_ = DefaultContent,
+    oneOfRoles = ["superadmin"],
+    mode = "absolute",
+    vectorItemsURI = VectorItemsURI,
 }) => {
     return (
         <PermissionGate oneOfRoles={oneOfRoles} mode={mode}>
-            <DeleteBodyBody 
+            <DeleteBodyBody
                 mutationAsyncAction={mutationAsyncAction}
                 DefaultContent={DefaultContent_}
                 vectorItemsURI={vectorItemsURI}
@@ -216,11 +165,11 @@ export const DeleteBody = ({
     )
 }
 
-export const DeleteBodyBody = ({ 
-    children, 
+export const DeleteBodyBody = ({
+    children,
     mutationAsyncAction = DeleteAsyncAction,
-    DefaultContent: DefaultContent_=DefaultContent,
-    vectorItemsURI=VectorItemsURI,
+    DefaultContent: DefaultContent_ = DefaultContent,
+    vectorItemsURI = VectorItemsURI,
 }) => {
     const { allowed } = usePermissionGateContext()
     const navigate = useNavigate();
@@ -273,7 +222,7 @@ export const DeleteBodyBody = ({
             </>
         )
     } else {
-            return (
+        return (
             <div>
                 <button
                     className="btn btn-warning form-control"
