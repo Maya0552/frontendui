@@ -31,7 +31,7 @@ export const MediumContent = ({ item, children}) => {
         <>
             <Attribute item={item} label="Identifikátor" attribute_name="name" />
             <Attribute item={item} label="Label" attribute_name="label" />
-            {/* <pre>{JSON.stringify(item, null, 2)}</pre> */}
+            <pre>{JSON.stringify(item, null, 2)}</pre>
             {children}
         </>
         

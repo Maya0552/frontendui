@@ -2,6 +2,8 @@ import { SelectInput } from "@hrbolek/uoisfrontend-shared"
 import { Input } from "../../../../_template/src/Base/FormControls/Input"
 import { Select } from "../../../../_template/src/Base/FormControls/Select"
 import { formFieldRegister } from "../../DigitalFormGQLModel/Components/FormFieldRenderer"
+import { useEffect, useState } from "react"
+import { TextArea } from "../../../../_template/src/Base/FormControls/TextArea"
 
 /**
  * A component that displays medium-level content for an template entity.
@@ -26,27 +28,168 @@ import { formFieldRegister } from "../../DigitalFormGQLModel/Components/FormFiel
  *   <p>Additional information about the entity.</p>
  * </TemplateMediumContent>
  */
-export const MediumEditableContent = ({ item, onChange=(e)=>null, onBlur=(e)=>null, children}) => {
-    const opt = Object.values(formFieldRegister).map(v => [v?.label, v?.value])
-    return (
-        <>           
-            {/* defaultValue={item?.name|| "Název"}  */}
+export const MediumEditableContent = ({ item, onChange = (e) => null, onBlur = (e) => null, children }) => {
+    const typeOptions = Object.values(formFieldRegister).map(v => [v?.label, v?.value])
+
+    const [backendFormula, setBackendFormula] = useState(() => { 
+        if (item?.typeId !== "fa2baf40-babc-4593-890f-d49bb9731322") return ""
+        return {...DEFAULT_BACKEND_FORMULA}
+    })
+    
+    useEffect(() => {
+        if (item?.typeId !== "fa2baf40-babc-4593-890f-d49bb9731322") return
+        const parsed = parseBackendFormula(item?.backendFormula);
+        // merge do defaultu (parsed může být null)
+        setBackendFormula({ ...DEFAULT_BACKEND_FORMULA, ...(parsed || {}) });
+    }, [item?.backendFormula]);
+
+    const handleChangeFormula = (e) => {
+        let value = e?.target?.value
+        const id = e?.target?.id
+        if (!id) {
+            console.warn("event without id", e)
+            return
+        }
+        if (id === "variables") {
+            console.log("handleChangeFormula", id, value)
+            try {
+                value = JSON.parse(value)
+            } catch (e) {
+
+            }
             
-            <Input id={"name"} label={"Jméno"} className="form-control" value={item?.name|| "name"} onChange={onChange} onBlur={onBlur} />
-            <Input id={"label"} label={"Označení"} className="form-control" value={item?.label|| "Položka"} onChange={onChange} onBlur={onBlur} />
-            <Input id={"labelEn"} label={"Anglické označení / label"} className="form-control" value={item?.labelEn|| "Field"} onChange={onChange} onBlur={onBlur} />
-            <Input id={"description"} label={"Popis"} className="form-control" value={item?.description|| "Popisný text"} onChange={onChange} onBlur={onBlur} />
+            console.log("handleChangeFormula", id, value)
+        }
+            
+        if (value)
+            setBackendFormula(prev => ({ ...prev, [id]: value }))
+        onChange?.({ target: { id: "backendFormula", value: JSON.stringify(backendFormula) } })
+    }
+    return (
+        <>
+            {/* defaultValue={item?.name|| "Název"}  */}
+
+            <Input id={"name"} label={"Jméno"} className="form-control" value={item?.name || "name"} onChange={onChange} onBlur={onBlur} />
+            <Input id={"label"} label={"Označení"} className="form-control" value={item?.label || "Položka"} onChange={onChange} onBlur={onBlur} />
+            <Input id={"labelEn"} label={"Anglické označení / label"} className="form-control" value={item?.labelEn || "Field"} onChange={onChange} onBlur={onBlur} />
+            <Input id={"description"} label={"Popis"} className="form-control" value={item?.description || "Popisný text"} onChange={onChange} onBlur={onBlur} />
             {/* required */}
-            <Input type="number" id={"order"} label={"Pořadí"} className="form-control" value={item?.order|| 1} onChange={onChange} onBlur={onBlur} />
+            <Input type="number" id={"order"} label={"Pořadí"} className="form-control" value={item?.order || 1} onChange={onChange} onBlur={onBlur} />
             {/* formula */}
             {/* type_id */}
-            <Select id="typeId" label={"typ"} className="form-control" value={item?.typeId || ""} onChange={onChange} onBlur={onBlur} >  
-                {opt.map(o => <option value={o[1]}>{o[0]}</option>)}
+            <Select id="typeId" label={"typ"} className="form-control" value={item?.typeId || ""} onChange={onChange} onBlur={onBlur} >
+                {typeOptions.map(o => <option value={o[1]}>{o[0]}</option>)}
             </Select>
-            {JSON.stringify(item)}
+            {/* {JSON.stringify(item)} */}
             {/* backend_formula */}
             {/* flatten_formula */}
+            {(item?.typeId === "fa2baf40-babc-4593-890f-d49bb9731322") && (
+                <MediumEditableContentQueryField item={item}  onChange={onChange} onBlur={onBlur} />
+            )}
+
             {children}
         </>
     )
 }
+
+const MediumEditableContentQueryField = ({ item, onChange = (e) => null, onBlur = (e) => null, children}) => {
+    const [backendFormula, setBackendFormula] = useState(() => { 
+        if (item?.typeId !== "fa2baf40-babc-4593-890f-d49bb9731322") return ""
+        return {...DEFAULT_BACKEND_FORMULA}
+    })
+    
+    useEffect(() => {
+        if (item?.typeId !== "fa2baf40-babc-4593-890f-d49bb9731322") return
+        const parsed = parseBackendFormula(item?.backendFormula);
+        // parsed.variables = JSON.parse(parsed.variables)
+        // console.log("MediumEditableContentQueryField.useEffect", parsed)
+        // merge do defaultu (parsed může být null)
+        setBackendFormula({ ...DEFAULT_BACKEND_FORMULA, ...(parsed || {}) });
+    }, [item?.backendFormula]);
+
+    const handleChangeFormula = (e) => {
+        let value = e?.target?.value
+        const id = e?.target?.id
+        if (!id) {
+            console.warn("event without id", e)
+            return
+        }
+        if (id === "variables") {
+            console.log("handleChangeFormula.pre", id, value)
+            try {
+                value = JSON.parse(value)
+            } catch (e) {
+
+            }
+            
+            console.log("handleChangeFormula.post", id, value)
+        }
+            
+        if (value) {
+            const next = ({ ...backendFormula, [id]: value })
+            console.log(next)
+            setBackendFormula(prev => next)
+            onChange?.({ target: { id: "backendFormula", value: JSON.stringify(next) } })
+        }
+            
+        
+    }
+
+    return (<>
+        <hr />
+        <TextArea
+            id="query"
+            label="Query"
+            className="form-control"
+            value={backendFormula?.query}
+            onChange={handleChangeFormula} onBlur={handleChangeFormula}
+        />
+        <TextArea
+            id="variables"
+            label="Variables"
+            className="form-control"
+            value={JSON.stringify(backendFormula?.variables).replace('\"', '"')}
+            onChange={handleChangeFormula} onBlur={handleChangeFormula}
+        />
+        <Input
+            id="selector"
+            label="Selector"
+            className="form-control"
+            value={backendFormula?.selector || ""}
+            onChange={handleChangeFormula} onBlur={handleChangeFormula}
+        />
+    </>)
+}
+
+const DEFAULT_BACKEND_FORMULA = {
+    query: `query groupPage(
+    $skip: Int # how many entities will be ignored, 
+    $limit: Int # how many entities will be taken, 
+    $orderby: String # name of field which will determite the order, 
+    $where: GroupInputWhereFilter # filter
+) {
+  groupPage(
+    skip: $skip, 
+    limit: $limit, 
+    orderby: $orderby, 
+    where: $where
+  ) {
+  id name
+}
+}`,
+    variables: {},
+    selector: "data",
+};
+
+const parseBackendFormula = (raw) => {
+    if (!raw) return null;
+    if (typeof raw === "object") return raw; // už je objekt
+    if (typeof raw !== "string") return null;
+
+    try {
+        return JSON.parse(raw);
+    } catch (e) {
+        console.warn("Invalid backendFormula JSON:", raw, e);
+        return null;
+    }
+};

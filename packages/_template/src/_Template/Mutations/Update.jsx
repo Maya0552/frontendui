@@ -61,7 +61,7 @@ export const UpdateLink = ({
  *   Async action (thunk) pro uložení změn (např. UpdateAsyncAction). Použije se podle Base/General implementace.
  * @param {Object} params.props
  *   Další props přeposílané do `BaseUpdateDialog` (např. `title`, `oklabel`, `cancellabel`,
- *   `initialItem`, `onOk`, `onCancel`, atd.).
+ *   `item`, `onOk`, `onCancel`, atd.).
  * @returns {JSX.Element}
  */
 export const UpdateDialog = ({
@@ -94,7 +94,7 @@ export const UpdateDialog = ({
  *   Async action (thunk) pro uložení změn (např. UpdateAsyncAction).
  * @param {Object} params.props
  *   Další props přeposílané do `BaseUpdateButton` (např. `children`, `className`, `title`,
- *   `initialItem`, `uriPattern`, `onOk`, `onCancel`, atd.).
+ *   `item`, `uriPattern`, `onOk`, `onCancel`, atd.).
  * @returns {JSX.Element}
  */
 export const UpdateButton = ({
@@ -128,7 +128,7 @@ export const UpdateButton = ({
  *   Async action (thunk) pro uložení změn (např. UpdateAsyncAction).
  * @param {Object} params.props
  *   Další props přeposílané do `BaseUpdateBody` (např. `title`, `oklabel`, `cancellabel`,
- *   `initialItem`, `onOk`, `onCancel`, `className`, atd.).
+ *   `item`, `onOk`, `onCancel`, `className`, atd.).
  * @returns {JSX.Element}
  */
 export const UpdateBody = ({

@@ -28,9 +28,10 @@ export const CreateButton = ({
     DefaultContent:defaultContent=DefaultContent,
     readItemURI=ReadItemURI, 
     rbacitem,
-    initialItem={
+    item={
         name: "Nový typ žádostí",
-        mastergroupId: "d75d64a4-bf5f-43c5-9c14-8fda7aff6c09"
+        mastergroupId: "d75d64a4-bf5f-43c5-9c14-8fda7aff6c09",
+        description: "Popis procesu"
     },
     ...props
 }) => {
@@ -40,7 +41,7 @@ export const CreateButton = ({
         CreateDialog={CreateDialog_}
         readItemURI={readItemURI}
         rbacitem={rbacitem}
-        initialItem={initialItem}
+        item={item}
         mutationAsyncAction={mutationAsyncAction}
         {...permissions}
     />
@@ -51,7 +52,7 @@ export const CreateDialog = ({
     mutationAsyncAction=MutationAsyncAction,
     DefaultContent:defaultContent=DefaultContent,
     readItemURI=ReadItemURI, 
-    initialItem,
+    item,
     ...props
 }) => {
     return <BaseCreateDialog 
@@ -59,7 +60,7 @@ export const CreateDialog = ({
         title={title}
         DefaultContent={defaultContent} 
         readItemURI={readItemURI}
-        initialItem={initialItem}
+        item={item}
         mutationAsyncAction={mutationAsyncAction}
     />
 };

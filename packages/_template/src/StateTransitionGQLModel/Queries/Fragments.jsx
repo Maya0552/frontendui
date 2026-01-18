@@ -131,6 +131,7 @@ fragment RBRoles on RBACObjectGQLModel {
     group {
       __typename
       id
+      name
       grouptype {
         __typename
         id

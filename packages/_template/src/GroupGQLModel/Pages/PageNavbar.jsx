@@ -136,7 +136,7 @@ export const PageNavbar = ({ item, children, onSearchChange }) => {
                         <NavDropdown.Item 
                             as={CreateGroupInserMembershipButton} 
                             item={item} 
-                            initialItem={{
+                            item={{
                                 group: item,
                                 groupId: item?.groupId
                             }}
@@ -244,9 +244,9 @@ export const MyNavDropdown = ({ item }) => {
             </NavDropdown.Item>
             <NavDropdown.Item 
                 as={CreateGroupInserMembershipButton} 
-                item={item} 
+                // item={item} 
                 disabled={!hasProperType} 
-                initialItem={{
+                item={{
                     group: item,
                     groupId: item?.groupId
                 }}
@@ -255,9 +255,9 @@ export const MyNavDropdown = ({ item }) => {
             </NavDropdown.Item>
             <NavDropdown.Item 
                 as={AddRoleOnGroupButton} 
-                item={item} 
+                // item={item} 
                 rbacitem={item}
-                initialItem={{
+                item={{
                     group: item,
                     groupId: item?.id,
                 }}

@@ -58,7 +58,7 @@ export const TextArea = ({
     const handleBlur = () => {
         // na blur obvykle chceš "flush" (externí debounce by měl mít flush),
         // tady aspoň pošli aktuální hodnotu:
-        onBlur(value_);
+        onBlur({ target: { id, value: value_ }});
     };
 
     const textarea = (

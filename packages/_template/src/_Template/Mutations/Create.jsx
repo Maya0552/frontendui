@@ -15,7 +15,7 @@ const permissions = {
     mode: "absolute",
 }
 
-const defaultInitialItem = { name: "Nový" };
+const defaultitem = { name: "Nový" };
 
 /**
  * Wrapper nad `BaseCreateLink` (alias importu `CreateLink` z Base/Mutations/Create),
@@ -54,7 +54,7 @@ export const CreateLink = ({
  * - nastaví výchozí mutaci pro vytvoření entity (`mutationAsyncAction`)
  * - umožní vyměnit dialog a obsah formuláře (`CreateDialog`, `DefaultContent`)
  * - určí kam se má po úspěšném vytvoření navigovat (`readItemURI`)
- * - předá výchozí `initialItem` pro nový záznam
+ * - předá výchozí `item` pro nový záznam
  *
  * Zobrazí tlačítko a po jeho stisku otevře dialog, při volbě OK dochází k odeslání mutace na backend
  *
@@ -74,8 +74,8 @@ export const CreateLink = ({
  * @param {Object} [params.rbacitem]
  *   RBAC item pro PermissionGate/Permission check (pokud se liší od entity, která se vytváří).
  *
- * @param {Object} [params.initialItem=defaultInitialItem]
- *   Výchozí objekt (draft) pro nový záznam. Posílá se do dialogu jako `initialItem`.
+ * @param {Object} [params.item=defaultitem]
+ *   Výchozí objekt (draft) pro nový záznam. Posílá se do dialogu jako `item`.
  *
  * @param {Object} params.props
  *   Všechny další props jsou přeposlány přímo do `BaseCreateButton`
@@ -89,7 +89,7 @@ export const CreateButton = ({
     DefaultContent:defaultContent=DefaultContent,
     readItemURI=ReadItemURI, 
     rbacitem,
-    initialItem=defaultInitialItem,
+    item=defaultitem,
     ...props
 }) => {
     return <BaseCreateButton 
@@ -98,7 +98,7 @@ export const CreateButton = ({
         CreateDialog={CreateDialog_}
         readItemURI={readItemURI}
         rbacitem={rbacitem}
-        initialItem={initialItem}
+        item={item}
         mutationAsyncAction={mutationAsyncAction}
         {...permissions}
     />
@@ -109,7 +109,7 @@ export const CreateButton = ({
  * který je odvozený z obecných `General*` komponent.
  *
  * Účel wrapperu:
- * - nastaví výchozí title, obsah formuláře a výchozí draft (`initialItem`)
+ * - nastaví výchozí title, obsah formuláře a výchozí draft (`item`)
  * - předá `readItemURI` pro případnou navigaci po vytvoření (dle implementace Base/General)
  * - umožní přepsat `mutationAsyncAction` (pokud BaseCreateDialog mutaci používá)
  *
@@ -130,8 +130,8 @@ export const CreateButton = ({
  * @param {string} [params.readItemURI=ReadItemURI]
  *   URI pattern pro navigaci na detail nově vytvořené entity (obvykle obsahuje `:id`).
  *
- * @param {Object} [params.initialItem=defaultInitialItem]
- *   Výchozí objekt (draft) pro nový záznam. Posílá se do dialogu jako `initialItem`.
+ * @param {Object} [params.item=defaultitem]
+ *   Výchozí objekt (draft) pro nový záznam. Posílá se do dialogu jako `item`.
  *
  * @param {Object} params.props
  *   Všechny další props jsou přeposlány přímo do `BaseCreateDialog`
@@ -144,7 +144,7 @@ export const CreateDialog = ({
     // mutationAsyncAction=MutationAsyncAction,
     DefaultContent:defaultContent=DefaultContent,
     readItemURI=ReadItemURI, 
-    initialItem=defaultInitialItem,
+    item=defaultitem,
     ...props
 }) => {
     return <BaseCreateDialog 
@@ -152,7 +152,7 @@ export const CreateDialog = ({
         title={title}
         DefaultContent={defaultContent} 
         readItemURI={readItemURI}
-        initialItem={initialItem}
+        item={item}
         // mutationAsyncAction={mutationAsyncAction}
     />
 };

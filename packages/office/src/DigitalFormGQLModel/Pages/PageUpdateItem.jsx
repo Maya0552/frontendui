@@ -32,6 +32,7 @@ import { DeleteButton as DeleteFormFieldButton } from "../../DigitalFormFieldGQL
 import { CreateButton as CreateFormSectionButton } from "../../DigitalFormSectionGQLModel/Mutations/Create";
 import { CreateButton as CreateFormFieldButton } from "../../DigitalFormFieldGQLModel/Mutations/Create";
 import { FormFieldRenderer } from "../Components/FormFieldRenderer";
+import { UpdateButton as UpdateFormSectionButton } from "../../DigitalFormSectionGQLModel/Mutations/Update";
 
 
 // const index = {
@@ -158,7 +159,7 @@ const TextDialog = ({ onOk = (value) => null, onCancel = () => null, value = "",
     }
     const onChange = (e) => {
         const newValue = e?.target?.value
-        console.log(newValue)
+        // console.log(newValue)
         SetLastValue(prev => newValue)
     }
     return (
@@ -404,25 +405,13 @@ export const UpdateField = ({
     digital_submission_field,
     // onFieldValueChange,
     onSubmissionFieldChange,
-    reRead,
+    // reRead,
     mode = "design",
     children,
     SubmissionFieldComponent = SubmissionFieldEdit
 }) => {
 
-    // const handleFieldDefChange = useCallback(())
-    const {
-        run: deleteField, error: errorDeleteField, loading: deletingField,
-        // entity, data 
-    } = useAsyncThunkAction(DeleteFieldAsyncAction, empty, { deferred: true })
-
-    const handleDelete = useCallback(async () => {
-        const result = await deleteField({
-            id: fieldDef?.id,
-            lastchange: fieldDef?.lastchange
-        })
-        reRead()
-    }, [deleteField])
+    const { loading: reReading, error: errorReload, reRead, item } = useGQLEntityContext()
 
     const handleSubmissionChange = useCallback(
         (next) => {
@@ -440,12 +429,14 @@ export const UpdateField = ({
         },
         [digital_submission_field, fieldDef, onSubmissionFieldChange]
     );
-    const handleOkFieldDialog = () => {
-
+    const handleReRead = () => {
+        // console.log("UpdateField.handleDelete", item)
+        reRead()
     }
+    
     return (
-        <AsyncActionProvider item={fieldDef} queryAsyncAction={ReadFormFieldAsyncAction} options={{ deferred: true }}>
-            <AsyncStateIndicator error={errorDeleteField} loading={deletingField} text="Odstraňuji položku" />
+        <div item={fieldDef} queryAsyncAction={ReadFormFieldAsyncAction} options={{ deferred: true }}>
+            <AsyncStateIndicator error={errorReload} loading={reReading} text="Odstraňuji položku" />
             <SimpleCardCapsule
                 className="border-start border-2 border-success"
                 title={<>
@@ -457,26 +448,27 @@ export const UpdateField = ({
             >
                 {(mode === "design") &&
                     <SimpleCardCapsuleRightCorner>
-                        <UpdateFormFieldButton className="btn btn-sm btn-outline-primary border-0" >
+                        <UpdateFormFieldButton 
+                            className="btn btn-sm btn-outline-primary border-0" 
+                            item={fieldDef}
+                            onOk={handleReRead}
+                        >
                             🖍
                         </UpdateFormFieldButton>
-                        {/* <ConfirmClickButton className="btn btn-sm border-0" type="button" onClick={handleUpdate} title="Upravit field">
-                            Pencil
-                        </ConfirmClickButton> */}
-                        <ConfirmClickButton className="btn btn-sm border-0" type="button" onClick={handleDelete} title="Remove field">
+                        <DeleteFormFieldButton
+                            className="btn btn-sm border-0" 
+                            title="Remove field"
+                            item={fieldDef}
+                            onOk={handleReRead} 
+                        >
                             🗑
-                        </ConfirmClickButton>
+                        </DeleteFormFieldButton>
                     </SimpleCardCapsuleRightCorner>
                 }
                 {/* {JSON.stringify(fieldDef)}
                 <hr/>
                 {JSON.stringify(sectionInstance)} */}
 
-                {/* <Input
-                    className="form-control" value={value}
-                    onChange={handleChange}
-                    placeholder="Enter value…"
-                /> */}
 
                 <SubmissionFieldComponent
                     onSubmissionFieldChange={handleSubmissionChange}
@@ -486,7 +478,7 @@ export const UpdateField = ({
                 />
 
             </SimpleCardCapsule>
-        </AsyncActionProvider>
+        </div>
     );
 };
 
@@ -508,6 +500,7 @@ export const FormSectionFields = ({
         () => digital_submission_sectionFields?.toSorted((a, b) => (a?.order || 0) - (b?.order || 0)) ?? [],
         [digital_submission_sectionFields]
     )
+
     return (<>
         {/* <br/>F{JSON.stringify(formfieldsSorted.length)}/D{JSON.stringify(digital_submission_sectionFields.length)} */}
         {(formfieldsSorted || []).map(
@@ -868,77 +861,6 @@ export const UpdateFormSection = ({
     const repeatable = formSectionDef?.repeatable ?? (max > 1);
 
     const H = headingIndex[clamp(level, 1, 6)] ?? headingIndex[6];
-    const {
-        run: update, error: errorUpdate, loading: updating,
-        // entity, data 
-    } = useAsyncThunkAction(UpdateAsyncAction, empty, { deferred: true })
-    const {
-        run: insertSection, error: errorInsertSection, loading: creatingSection,
-        // entity, data 
-    } = useAsyncThunkAction(InsertSectionAsyncAction, empty, { deferred: true })
-    const {
-        run: deleteSection, error: errorDeleteSection, loading: deletingSection,
-        // entity, data 
-    } = useAsyncThunkAction(DeleteSectionAsyncAction, empty, { deferred: true })
-    const {
-        run: insertField, error: errorInsertField, loading: creatingField,
-        // entity, data 
-    } = useAsyncThunkAction(InsertFieldAsyncAction, empty, { deferred: true })
-
-    const { reRead } = useGQLEntityContext()
-    const onAddSubSection = useCallback(async (id) => {
-        console.log("onAddSubSection", id)
-        const itemid = crypto.randomUUID();
-        const result = await insertSection({
-            sectionId: formSectionDef?.id,
-            id: itemid,
-            formId: formSectionDef?.formId,
-            name: `sekce_${level}_${formSectionDef?.sections?.length + 1}`,
-            label: `${level}.${formSectionDef?.sections?.length + 1}. Nová sekce`,
-            labelEn: "New section",
-            description: `Sekce ${level}.${formSectionDef?.sections?.length + 1}`,
-            repeatableMin: 1,
-            repeatableMax: 1,
-            fields: [
-                {
-                    id: crypto.randomUUID(),
-                    formSectionId: itemid,
-                    formId: formSectionDef?.formId,
-                    label: "Nová položka",
-                    labelEn: "New field",
-                    name: "field",
-                    order: formSectionDef?.sections?.length + 1
-                }
-            ]
-        })
-        console.log("onAddSubSection.result", result)
-    }, [insertSection, level, formSectionDef])
-
-    const onRemoveSection = useCallback(async (e) => {
-        console.log("onRemoveSection", e)
-        const result = await deleteSection({
-            id: formSectionDef?.id,
-            lastchange: formSectionDef?.lastchange
-        })
-        console.log("onRemoveSection.result", result)
-        reRead()
-    }, [reRead, deleteSection])
-
-    const onAddField = useCallback(async (e) => {
-        console.log("onAddField", e)
-        const itemid = crypto.randomUUID();
-        const result = await insertField({
-            formSectionId: formSectionDef?.id,
-            id: itemid,
-            formId: formSectionDef?.formId,
-            name: `field_${level}_${formSectionDef?.fields?.length + 1}`,
-            label: `${level}.${formSectionDef?.fields?.length + 1}. Nová položka`,
-            labelEn: "New field",
-            order: formSectionDef?.fields?.length + 1
-        })
-        console.log("onAddField.result", result)
-    }, [insertField, level, formSectionDef])
-
 
     useEffect(() => {
         // bezpečně: bez id nemá cenu normalizovat
@@ -1017,19 +939,17 @@ export const UpdateFormSection = ({
         [digital_submission_section, onSubmissionSectionChange]
     );
 
-    const { loading, error, reRead: reRead2, item } = useGQLEntityContext()
+    const { loading: reReading, error: errorReload, reRead, item } = useGQLEntityContext()
     const handleReload = async () => {
         if (item?.id) {
-            const response = await reRead2({ id:  item?.id })
-            console.log("UpdateForm.handleReload", response)
+            const response = await reRead({ id:  item?.id })
+            // console.log("UpdateForm.handleReload", response)
         }
     }
 
     return (
-        <AsyncActionProvider item={formSectionDef} queryAsyncAction={ReadFormSectionAsyncAction} options={{ deferred: true }}>
-            <AsyncStateIndicator error={errorUpdate} loading={updating} text="Ukládám" />
-            <AsyncStateIndicator error={errorInsertSection} loading={creatingSection} text="Vytvářím sekci" />
-            <AsyncStateIndicator error={errorDeleteSection} loading={deletingSection} text="Odstraňuji sekci" />
+        <div item={formSectionDef} queryAsyncAction={ReadFormSectionAsyncAction} options={{ deferred: true }}>
+            <AsyncStateIndicator error={errorReload} loading={reReading} text="Čtu" />
 
             <SimpleCardCapsule title={<>
                 {(mode === "design") && (<>{formSectionDef?.label ?? formSectionDef?.name}{" "}</>)}
@@ -1041,17 +961,18 @@ export const UpdateFormSection = ({
 
                 {(mode === "design") &&
                     <SimpleCardCapsuleRightCorner>
-                        <DesignSectionButton
-                            className="btn btn-sm btn-outline-primary border-0"
-                        >🖍</DesignSectionButton>
 
-                        {/* <ConfirmClickButton className="btn btn-sm border-0" onClick={onAddSubSection}>
-                            + Sekce
-                        </ConfirmClickButton> */}
+                        <UpdateFormSectionButton
+                            className="btn btn-sm btn-outline-primary border-0"
+                            item={formSectionDef}
+                            onOk={handleReload}
+                        >
+                            🖍
+                        </UpdateFormSectionButton>
                         <CreateFormSectionButton 
                             className="btn btn-sm border-01" 
                             onOk={handleReload}
-                            initialItem={{
+                            item={{
                                 sectionId: formSectionDef?.id,
                                 // id: itemid,
                                 formId: formSectionDef?.formId,
@@ -1076,13 +997,29 @@ export const UpdateFormSection = ({
                         >
                             + Sekce
                         </CreateFormSectionButton>
-
-                        <ConfirmClickButton className="btn btn-sm border-0" onClick={onAddField}>
+                        <CreateFormFieldButton
+                            className="btn btn-sm border-0" 
+                            onOk={handleReload}
+                            item={{
+                                formSectionId: formSectionDef?.id,
+                                id: crypto.randomUUID(),
+                                formId: formSectionDef?.formId,
+                                name: `field_${level}_${formSectionDef?.fields?.length + 1}`,
+                                label: `${level}.${formSectionDef?.fields?.length + 1}. Nová položka`,
+                                labelEn: "New field",
+                                order: formSectionDef?.fields?.length + 1
+                            }}
+                        >
                             + Položka
-                        </ConfirmClickButton>
-                        <ConfirmClickButton className="btn btn-sm border-0" onClick={onRemoveSection}>
+                        </CreateFormFieldButton>
+                        <DeleteFormSectionButton
+                            className="btn btn-sm border-0" 
+                            item={formSectionDef}
+                            onOk={handleReload}
+                        >
                             🗑
-                        </ConfirmClickButton>
+                        </DeleteFormSectionButton>
+
                     </SimpleCardCapsuleRightCorner>
                 }
                 <div>
@@ -1110,7 +1047,7 @@ export const UpdateFormSection = ({
                     </div>
                 </div>
             </SimpleCardCapsule>
-        </AsyncActionProvider>
+        </div>
     );
 };
 
@@ -1231,7 +1168,7 @@ export const UpdateForm = ({
                 ...prev,
                 ds: newds
             }
-            console.log("handleSubmissionSectionChange", submission_section, prev, result)
+            // console.log("handleSubmissionSectionChange", submission_section, prev, result)
 
             return result
 
@@ -1264,7 +1201,7 @@ export const UpdateForm = ({
                 label: "Položka"
             }]
         })
-        console.log(result)
+        // console.log(result)
         return result
     }, [insertSection])
 
@@ -1274,7 +1211,7 @@ export const UpdateForm = ({
     const handleReload = async () => {
         if (item?.id) {
             const response = await reRead({ id:  item?.id })
-            console.log("UpdateForm.handleReload", response)
+            // console.log("UpdateForm.handleReload", response)
         }
     }
 
@@ -1289,16 +1226,11 @@ export const UpdateForm = ({
                 <SimpleCardCapsule title={formDef?.name ?? "Form"}>
                     <SimpleCardCapsuleRightCorner>
                         <button className="btn btn-sm border-0" onClick={handleReload}>Reload</button>
-                        {mode === 'design' && (<ConfirmClickButton
-                            onClick={handleCreate}
-                            className="btn btn-sm border-0"
-                        >
-                            + Sekce
-                        </ConfirmClickButton>)}
+                        {mode === 'design' && (
                         <CreateFormSectionButton 
                             className="btn btn-sm border-0" 
                             onOk={handleReload}
-                            initialItem={{
+                            item={{
                                 id: sectionid,
                                 formId: initialFormDef?.id,
                                 name: `sekce`,
@@ -1308,6 +1240,8 @@ export const UpdateForm = ({
                                 repeatableMax: 1,
                                 fields: [{
                                     id: crypto.randomUUID(),
+                                    formId: initialFormDef?.id,
+                                    formSectionId: sectionid,
                                     name: "field",
                                     label: "Položka"
                                 }]
@@ -1315,6 +1249,7 @@ export const UpdateForm = ({
                         >
                             + Sekce
                         </CreateFormSectionButton>
+                        )}
                         <button className="btn btn-success btn-sm border-0" onClick={() => setMode(prev => prev === 'design' ? 'view' : 'design')}>
                             {mode === 'design' ? 'design' : 'view'}
                         </button>

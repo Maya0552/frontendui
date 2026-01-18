@@ -76,6 +76,7 @@ export const DeleteLink = ({
 export const DeleteButton = ({
     mutationAsyncAction=MutationAsyncAction,
     DefaultContent:DefaultContent_=DefaultContent,
+    Dialog=DeleteDialog,
     vectorItemsURI=ListURI,
     onOk,
     ...props 
@@ -84,6 +85,7 @@ export const DeleteButton = ({
         <BaseDeleteButton 
             {...props} 
             DefaultContent={DefaultContent_} 
+            Dialog={Dialog}
             mutationAsyncAction={mutationAsyncAction}
             vectorItemsURI={vectorItemsURI}
             onOk={onOk}
@@ -110,7 +112,7 @@ export const DeleteButton = ({
  *
  * @param {Object}} params.props
  *   Další props přeposílané do `BaseDeleteDialog` (např. `title`, `oklabel`, `cancellabel`,
- *   `initialItem`, `onOk`, `onCancel`, atd.).
+ *   `item`, `onOk`, `onCancel`, atd.).
  *
  * @returns {JSX.Element}
  */
@@ -149,7 +151,7 @@ export const DeleteDialog = ({
  *
  * @param {Object}} params.props
  *   Další props přeposílané do `BaseDeleteBody` (např. `title`, `oklabel`, `cancellabel`,
- *   `initialItem`, `onOk`, `onCancel`, atd.).
+ *   `item`, `onOk`, `onCancel`, atd.).
  *
  * @returns {JSX.Element}
  */

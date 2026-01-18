@@ -89,7 +89,7 @@ export const CreateUserInserMembershipButton = ({
     DefaultContent:defaultContent=UserInserMembershipContent,
     readItemURI=ReadItemURI, 
     item={},
-    initialItem={},
+    // item={},
     ...props
 }) => {
     return <BaseCreateButton 
@@ -98,7 +98,7 @@ export const CreateUserInserMembershipButton = ({
         readItemURI={readItemURI}
         mutationAsyncAction={mutationAsyncAction}
         rbacitem={item}
-        initialItem={initialItem}
+        item={item}
         {...permissions}
     />
 }
@@ -107,13 +107,13 @@ export const CreateUserInserMembershipDialog = ({
     mutationAsyncAction=MutationAsyncAction,
     DefaultContent:defaultContent=UserInserMembershipContent,
     readItemURI=ReadItemURI, 
-    initialItem={},
+    item={},
     ...props
 }) => {
     return <BaseCreateDialog 
         {...props} 
         title="Nové členství"
-        initialItem={initialItem}
+        item={item}
         DefaultContent={defaultContent} 
         readItemURI={readItemURI}
         mutationAsyncAction={mutationAsyncAction}

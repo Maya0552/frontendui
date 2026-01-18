@@ -1,6 +1,6 @@
 import { Col } from "../../../../_template/src/Base/Components/Col"
 import { Row } from "../../../../_template/src/Base/Components/Row"
-import { Link } from "./Link"
+
 /**
  * A component that displays medium-level content for an template entity.
  *
@@ -93,4 +93,38 @@ import { Link } from "./Link"
 //     )
 // }
 
-export { MediumContent } from "../../../../_template/src/Base/Components/MediumContent"
+import { MediumContent as MediumContent_ } from "../../../../_template/src/Base/Components/MediumContent"
+import { SimpleCardCapsule } from "@hrbolek/uoisfrontend-shared"
+import { Attribute, formatDateTime } from "../../../../_template/src/Base/Components/Attribute"
+import { Link } from "../../../../_template/src/Base/Components"
+
+export const MediumContent = ({item}) => {
+    return (
+        <>
+            {/* <MediumContent_ item={item} />
+            <hr/> */}
+            <Attribute label="Název">
+                <Link item={item} />
+            </Attribute>
+            <Attribute label="Vzorový formulář">
+                <Link item={item?.initialForm} />
+            </Attribute>
+
+            <Attribute label="Stavy">
+                <Link item={item?.statemachine} />
+            </Attribute>
+            <Attribute label="První stav">
+                <Link item={item?.state} />
+            </Attribute>
+
+            <hr/>
+            <Attribute label="Vytvořeno">
+                <Link item={item?.createdby} /> @ {formatDateTime(item?.created)}
+            </Attribute>
+            <Attribute label="Změněno">
+                <Link item={item?.changedby} /> @ {formatDateTime(item?.lastchange)}
+            </Attribute>
+            
+        </>
+    )
+}

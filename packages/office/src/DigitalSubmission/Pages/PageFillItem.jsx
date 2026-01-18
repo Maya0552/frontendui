@@ -44,6 +44,7 @@ import { Attribute, formatDateTime } from "../../../../_template/src/Base/Compon
 import { InsertAsyncAction as InsertSubmissionSectionAsyncAction } from "../../DigitalSubmissionSectionGQLModel/Queries/InsertAsyncAction";
 import { DeleteAsyncAction as DeleteSubmissionSectionAsyncAction } from "../../DigitalSubmissionSectionGQLModel/Queries/DeleteAsyncAction";
 import { FormFieldRenderer } from "../../DigitalFormGQLModel/Components/FormFieldRenderer";
+import { MediumEditableContent, RBACEdit } from "../../../../_template/src/RBACGQLModel/Components/MediumEditableContent";
 
 
 // const index = {
@@ -387,9 +388,10 @@ const SubmissionFieldEdit = ({
     const { run, loading: saving, error } =
         useAsyncThunkAction(UpdateSubmissionFieldAsyncAction, { id: digital_submission_field?.id }, { deferred: true });
 
-    const { run: reReadSubmission } =
+    const { run: reRead } =
         useAsyncThunkAction(ReadSubmissionAsyncAction, {}, { deferred: true });
 
+    const { reRead: reRead2 } = useGQLEntityContext()
     const fieldRef = useRef(digital_submission_field);
     useEffect(() => {
         fieldRef.current = digital_submission_field;
@@ -403,6 +405,7 @@ const SubmissionFieldEdit = ({
     }, [resolvedValue]);
 
     const flush = useCallback(async () => {
+        const reReadMain = reRead2
         const f = fieldRef.current;
         const value = pendingValueRef.current;
 
@@ -413,7 +416,8 @@ const SubmissionFieldEdit = ({
         await run(payload);
 
         const submissionId = f?.submissionId;
-        if (submissionId) await reReadSubmission({ id: submissionId });
+        // if (submissionId) await reReadMain({ id: submissionId });
+        await reReadMain();
 
         onSubmissionFieldChange?.({
             ...f,
@@ -421,7 +425,7 @@ const SubmissionFieldEdit = ({
             fieldId: fieldDef?.id,
             value,
         });
-    }, [run, reReadSubmission, onSubmissionFieldChange, fieldDef]);
+    }, [run, reRead2, reRead, onSubmissionFieldChange, fieldDef]);
 
     const handleValueChange = (e) => {
         pendingValueRef.current = e?.target?.value ?? "";
@@ -478,7 +482,8 @@ export const UpdateField = ({
     );
 
     return (
-        <AsyncActionProvider item={fieldDef} queryAsyncAction={ReadFormFieldAsyncAction} options={{ deferred: true }}>
+        <div item={fieldDef} queryAsyncAction={ReadFormFieldAsyncAction} options={{ deferred: true }}>
+            {/* {JSON.stringify(digital_submission_field)} */}
             <SimpleCardCapsule
                 className="border-start border-2 border-success"
                 title={<>
@@ -508,7 +513,7 @@ export const UpdateField = ({
                 />
 
             </SimpleCardCapsule>
-        </AsyncActionProvider>
+        </div>
     );
 };
 
@@ -989,7 +994,7 @@ export const UpdateFormSection = ({
     );
 
     return (
-        <AsyncActionProvider item={formSectionDef} queryAsyncAction={ReadFormSectionAsyncAction} options={{ deferred: true }}>
+        <div item={formSectionDef} queryAsyncAction={ReadFormSectionAsyncAction} options={{ deferred: true }}>
             {/* <AsyncStateIndicator error={errorUpdate} loading={updating} text="Ukládám" />
             <AsyncStateIndicator error={errorInsertSection} loading={creatingSection} text="Vytvářím sekci" />
             <AsyncStateIndicator error={errorDeleteSection} loading={deletingSection} text="Odstraňuji sekci" /> */}
@@ -999,14 +1004,17 @@ export const UpdateFormSection = ({
                 style={{ paddingLeft: 12, borderLeft: "2px solid #e02222ff" }}
             >
                 <div>
-
-                    <H>{formSectionDef?.label ?? "--NEOZNAČEN--"}</H>
+                    {/* {JSON.stringify(digital_submission_section)} */}
+                    <H>
+                        {formSectionDef?.label}
+                        {formSectionDef?.label === undefined && "chybi label"}
+                    </H>
                     {/* {(mode === "design") && (<div>
                         repeat: {formSectionDef?.repeatableMin ?? "undef"}-
                         {formSectionDef?.repeatableMax ?? "undef"} ({repeatable ? "repeatable" : "single"})
                     </div>)} */}
                     {formSectionDef?.description ?? "--NEPOPSÁN--"}
-
+                    
                     <div>
                         <FormSectionBody
                             formSectionDef={formSectionDef}
@@ -1024,7 +1032,7 @@ export const UpdateFormSection = ({
                     </div>
                 </div>
             </SimpleCardCapsule>
-        </AsyncActionProvider>
+        </div>
     );
 };
 
@@ -1163,12 +1171,12 @@ export const UpdateForm = ({
      *  Designer changes (structure)
      * --------------------------- */
 
-    const { reRead } = useGQLEntityContext()
-    useEffect(()=> {
-        console.log("UpdateForm.useEffect.reRead", typeof reRead)
-        if (formDef?.id)
-            reRead({ id: formDef?.id })
-    }, [formDef?.id])
+    // const { reRead } = useGQLEntityContext()
+    // useEffect(()=> {
+    //     console.log("UpdateForm.useEffect.reRead", typeof reRead)
+    //     if (formDef?.id)
+    //         reRead({ id: formDef?.id })
+    // }, [formDef?.id])
 
     const {
         run: insertSection, error: errorInsertSection, loading: creatingSection,
@@ -1187,9 +1195,17 @@ export const UpdateForm = ({
                 <h1>{formDef?.name ?? "Form"}</h1>
                 {formDef?.description && "--NEVYPLNĚNO--"}
                 <div>
+                    {/* {JSON.stringify(initialSubmission?.sections?.length)}" "
+                    {JSON.stringify(initialSubmission?.sections?.[0])}" "
+                    <br/>
+                    {JSON.stringify(formDef?.sections?.[0])}" " */}
+                    {!formDef?.sections && "chybi definice formularovych sekci"}
+                    {!initialSubmission?.sections && "chybi definice sekci submission"}
                     {(formDef?.sections ?? []).map((secDef) => {
                         const digital_submission_sections =
                             initialSubmission?.sections?.filter(s => s?.formSectionId === secDef?.id) || []
+                        if (digital_submission_sections.length === 0)
+                            return <>Chybi sekce v submission pro {secDef?.id}</>
                         return (
                             <UpdateSectionWrap
                                 digital_submission_sections={digital_submission_sections}
@@ -1250,19 +1266,20 @@ export const FillItem = ({ item }) => {
     </>)
 }
 
-const FillItemBody = ({ submission }) => {
-    const ctx = useGQLEntityContext()
-    const { id } = submission
-    const { entity, run } = useAsyncThunkAction(ReadSubmissionAsyncAction, { id }, { deferred: true })
+export const FillItemBody = ({ submission, debug=false }) => {
+    // const ctx = useGQLEntityContext()
+    const { id, form } = submission
+    // const { entity, run } = useAsyncThunkAction(ReadSubmissionAsyncAction, { id }, { deferred: true })
     // useEffect(()=>{
     //     if (id)
     //         run({id})
     // }, [run, id])
     return (<>
 
+        {/* <RBACEdit item={{id: submission?.rbacobjectId }} /> */}
 
         {/* <GeneratedContentBase item={item} /> */}
-        <UpdateForm submission={entity ?? submission} item={ctx.item} />
+        <UpdateForm submission={submission} item={form} debug={debug} />
     </>)
 }
 

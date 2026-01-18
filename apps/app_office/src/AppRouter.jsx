@@ -15,12 +15,18 @@ import { RoleRouterSegments } from "../../../packages/_template/src/RoleGQLModel
 import { AppNavbar } from "./AppNavbar";
 import { DigitalFormGQLModelRouterSegments } from "../../../packages/office/src/DigitalFormGQLModel/Pages";
 import { SubmissionRouterSegments } from "../../../packages/office/src/DigitalSubmission/Pages/RouterSegment";
+import { StateMachineRouterSegments } from "../../../packages/_template/src/StateMachineGQLModel/Pages/RouterSegment";
+import { RequestTypeRouterSegments } from "../../../packages/office/src/RequestTypeGQLModel/Pages/RouterSegment";
+import { RequestRouterSegments } from "../../../packages/office/src/RequestGQLModel/Pages/RouterSegment";
 
 
 const AppLayout = () => (
+    
     <NavigationHistoryProvider>
         <AppNavbar />
-        <NavigationHistoryLinks />
+        <div className="screen-only" >
+            <NavigationHistoryLinks />
+        </div>
         <Outlet />
     </NavigationHistoryProvider>
 );
@@ -36,9 +42,12 @@ const Routes = [
             ...UserRouterSegments,
             ...GroupTypeRouterSegments,
             ...RoleRouterSegments,
+            ...StateMachineRouterSegments,
 
             ...DigitalFormGQLModelRouterSegments,
-            ...SubmissionRouterSegments
+            ...SubmissionRouterSegments,
+            ...RequestTypeRouterSegments,
+            ...RequestRouterSegments
         ],
     },
 ];

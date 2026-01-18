@@ -40,6 +40,7 @@ export const DeleteButton = ({
             DefaultContent={DefaultContent_} 
             mutationAsyncAction={mutationAsyncAction}
             vectorItemsURI={vectorItemsURI}
+            Dialog={DeleteDialog}
             {...permissions}
         />
     )

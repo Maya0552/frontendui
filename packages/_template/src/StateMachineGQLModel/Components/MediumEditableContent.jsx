@@ -10,6 +10,8 @@ import { CreateButton as CreateTransitionButton } from "../../StateTransitionGQL
 import { UpdateButton as UpdateStateButton } from "../../StateGQLModel/Mutations/Update";
 import { CreateButton as CreateStateButton } from "../../StateGQLModel/Mutations/Create";
 import { DeleteButton as DeleteStateButton } from "../../StateGQLModel/Mutations/Delete";
+import { Arrow90degRight, ArrowRight, PencilFill, Trash } from "react-bootstrap-icons";
+import { useGQLEntityContext } from "../../Base/Helpers/GQLEntityProvider";
 
 /**
  * A component that displays medium-level content for an template entity.
@@ -149,7 +151,7 @@ export function StateMachineFlowVisualization({
                 State machine neobsahuje žádné stavy.
                 <CreateStateButton
                     className="btn btn-outline-primary form-control"
-                    initialItem={{
+                    item={{
                         statemachineId: item?.id,
                         name: "Nový stavAAAAAAAAAAAA",
                         order: 0
@@ -245,7 +247,7 @@ export function StateMachineFlowSvg({
     onTransitionRemove,
     TransitionEdgeComponent,
     width = 1100,
-    height = 260, // může být menší, protože uzly jsou menší
+    height = 200, // může být menší, protože uzly jsou menší
 }) {
     const layout = useMemo(() => {
         // ↓↓↓ poloviční uzly
@@ -723,13 +725,13 @@ function MatrixTable({
         }
 
         // seřadit podle názvu v buňkách
-        for (let r = 0; r < n; r++) {
-            for (let c = 0; c < n; c++) {
-                matrix[r][c].sort((a, b) =>
-                    String(a?.name ?? "").localeCompare(String(b?.name ?? ""), "cs")
-                );
-            }
-        }
+        // for (let r = 0; r < n; r++) {
+        //     for (let c = 0; c < n; c++) {
+        //         matrix[r][c].sort((a, b) =>
+        //             String(a?.name ?? "").localeCompare(String(b?.name ?? ""), "cs")
+        //         );
+        //     }
+        // }
 
         return { matrix };
     }, [states, transitions]);
@@ -744,12 +746,15 @@ function MatrixTable({
         [states, currentId]
     );
 
-    const { run: reRead } = useAsyncThunkAction(ReadAsyncAction, item, {deferred: true})
+    // const { run: reRead } = useAsyncThunkAction(ReadAsyncAction, item, {deferred: true})
+    const { reRead } = useGQLEntityContext()
     const handleDeleteTransition = (t) => () => {
         console.log("handleDeleteTransition", t)
         reRead()
     }
-    
+    const handleReRead = () => {
+        reRead()
+    }
     // const handleAddTransition = (t) => () => {}
 
     return (
@@ -771,11 +776,12 @@ function MatrixTable({
                             Cíl
                             <CreateStateButton
                                 className="btn btn-sm btn-outline-secondary"
-                                initialItem={{
+                                item={{
                                     statemachineId: current?.statemachineId,
                                     name: "Nový stav",
                                     order: states.length
                                 }}
+                                onOk={handleReRead}
                             >
                                 +
                             </CreateStateButton>
@@ -796,14 +802,14 @@ function MatrixTable({
                                         className="btn btn-sm btn-outline-secondary"
                                         item={s}
                                     >
-                                        Edit
+                                        <PencilFill />
                                     </UpdateStateButton>
                                     <DeleteStateButton
                                         className="btn btn-sm btn-outline-secondary"
                                         item={s}
                                         onOk={handleDeleteTransition(s)}
                                     >
-                                        Del
+                                        <Trash />
                                     </DeleteStateButton>
                                 </div>
                             </th>
@@ -844,7 +850,7 @@ function MatrixTable({
                                         {(list.length === 0) && (r !== c) && (
                                             <CreateButton 
                                                 className="btn btn-sm btn-outline-light w-100"
-                                                initialItem={{
+                                                item={{
                                                     name: (r>c)?"Vrátit":"Schválit",
                                                     sourceId: rowState?.id,
                                                     targetId: colState?.id,
@@ -914,16 +920,17 @@ function MatrixTable({
                                     <div className="d-flex gap-2 justify-content-center">
                                     {(list.length === 0) && (current !== colState) && (
                                         <CreateTransitionButton 
-                                            className="btn btn-sm btn-outline-light w-100"
-                                            initialItem={{
+                                            className="btn btn-sm btn-outline-secondary w-100"
+                                            item={{
                                                 // name: (r>c)?"Vrátit":"Schválit",
-                                                name: "Vrátit" + "Schválit",
+                                                name: (current?.order < colState?.order)?"Vrátit":"Schválit",
                                                 sourceId: current?.id,
                                                 targetId: colState?.id,
                                                 statemachineId: current?.statemachineId
                                             }}
+                                            onOk={handleReRead}
                                         >
-                                            +
+                                            Přidat: {current?.name} <ArrowRight/> {colState?.name}
                                         </CreateTransitionButton>
                                     )}
                                     {(current === colState) && (
@@ -944,14 +951,14 @@ function MatrixTable({
                                                         className="btn btn-sm btn-outline-danger  me-2"
                                                         item={t}
                                                     >
-                                                        Edit
+                                                        <PencilFill />
                                                     </UpdateTransitionButton>
                                                     <DeleteTransitionButton
                                                         className="btn btn-sm btn-outline-danger me-2"
                                                         item={t}
                                                         onOk={handleDeleteTransition(t)}
                                                     >
-                                                        Trash
+                                                        <Trash />
                                                     </DeleteTransitionButton>
                                                 </span>
                                             ))

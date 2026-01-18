@@ -29,6 +29,15 @@ fragment Link on DigitalSubmissionFieldGQLModel {
 const MediumFragmentStr = `
 fragment Medium on DigitalSubmissionFieldGQLModel {
   ...Link
+
+}
+
+`
+
+const LargeFragmentStr = `
+fragment Large on DigitalSubmissionFieldGQLModel {
+  ...Medium
+  
   rbacobject {
     ...RBRoles
   }
@@ -44,8 +53,10 @@ fragment Medium on DigitalSubmissionFieldGQLModel {
     
     state {
     ...State
-    }
+    }  
 }
+
+
 
 
 fragment DigitalFormField on DigitalFormFieldGQLModel {
@@ -153,13 +164,6 @@ fragment State on StateGQLModel {
     }
 `
 
-const LargeFragmentStr = `
-fragment Large on DigitalSubmissionFieldGQLModel {
-  ...Medium
-  
-}
-`
-
 const RoleFragmentStr = `
 fragment Role on RoleGQLModel {
     __typename
@@ -204,6 +208,7 @@ fragment RBRoles on RBACObjectGQLModel {
     group {
       __typename
       id
+      name
       grouptype {
         __typename
         id
@@ -217,6 +222,6 @@ export const RoleFragment = createQueryStrLazy(`${RoleFragmentStr}`)
 export const RBACFragment = createQueryStrLazy(`${RBACFragmentStr}`)
 
 export const LinkFragment = createQueryStrLazy(`${LinkFragmentStr}`)
-export const MediumFragment = createQueryStrLazy(`${MediumFragmentStr}`, LinkFragment, RBACFragment)
-export const LargeFragment = createQueryStrLazy(`${LargeFragmentStr}`, MediumFragment)
+export const MediumFragment = createQueryStrLazy(`${MediumFragmentStr}`, LinkFragment)
+export const LargeFragment = createQueryStrLazy(`${LargeFragmentStr}`, MediumFragment, RBACFragment)
   

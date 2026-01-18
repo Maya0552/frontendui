@@ -36,11 +36,13 @@ export const UpdateLink = ({
 
 export const UpdateButton = ({
     DefaultContent:DefaultContent_=DefaultContent,
+    Dialog:Dialog_=UpdateDialog,
     mutationAsyncAction:mutationAsyncAction_=mutationAsyncAction,
     ...props
 }) => {
     return <BaseUpdateButton 
         {...props} 
+        Dialog={Dialog_}
         DefaultContent={DefaultContent_} 
         mutationAsyncAction={mutationAsyncAction_}
         {...permissions}

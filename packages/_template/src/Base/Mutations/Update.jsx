@@ -61,7 +61,7 @@ export const UpdateButton = ({
             mutationAsyncAction={mutationAsyncAction}
             Dialog={Dialog}
             DefaultContent={DefaultContent_}
-            initialItem={item}
+            item={item}
             uriPattern={uriPattern}
             onOk={onOk}
             onCancel={onCancel}
@@ -78,7 +78,7 @@ export const UpdateDialog = ({
     oklabel = "Ok",
     cancellabel = "Zrušit",
     DefaultContent: DefaultContent_ = DefaultContent,
-    initialItem,      // ⚠️ GeneralButton předává initialItem
+    item,      // ⚠️ GeneralButton předává item
     onOk,
     onCancel,
     children,
@@ -90,7 +90,7 @@ export const UpdateDialog = ({
             oklabel={oklabel}
             cancellabel={cancellabel}
             DefaultContent={DefaultContent_}
-            initialItem={initialItem}
+            item={item}
             onOk={onOk}
             onCancel={onCancel}
             {...props}
@@ -153,7 +153,7 @@ export const UpdateContextDialog = ({
                 onOk={handleOk_}
                 onCancel={handleCancel_}
                 DefaultContent={DefaultContent_}
-                initialItem={item}
+                item={item}
                 {...props}
             >
                 {children}

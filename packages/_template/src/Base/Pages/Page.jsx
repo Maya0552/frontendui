@@ -12,6 +12,7 @@ import { Col } from "../Components/Col"
 import { Card } from "react-bootstrap"
 import { SimpleCardCapsuleRightCorner } from "@hrbolek/uoisfrontend-shared"
 import { CopyButton } from "../Components/CopyButton"
+import { ReadAsyncAction } from "../Queries"
 
 
 export const GeneratedContentBase = ({ item }) => {

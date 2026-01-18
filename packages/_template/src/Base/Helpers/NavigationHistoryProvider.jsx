@@ -109,7 +109,9 @@ export const NavigationHistoryProvider = ({ children }) => {
         [items, navigate]
     );
 
-    return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
+    return (<Ctx.Provider value={value}>
+        {children}
+        </Ctx.Provider>);
 };
 
 export const useAzureLikeHistory = () => {

@@ -2,6 +2,7 @@ import { SimpleCardCapsule } from "../../../../_template/src/Base/Components"
 import { Col } from "../../../../_template/src/Base/Components/Col"
 import { Row } from "../../../../_template/src/Base/Components/Row"
 import { Input } from "../../../../_template/src/Base/FormControls/Input"
+import { TextArea } from "../../../../_template/src/Base/FormControls/TextArea"
 import { EditableSectionFields } from "../Vectors/EditableSectionFields"
 
 /**
@@ -48,12 +49,12 @@ export const MediumEditableContent = ({ item, onChange=(e)=>null, onBlur=(e)=>nu
                     <Input id={"repeatableMax"} type="number" label={"Maximální počet"} className="form-control" value={item?.repeatableMax|| 1} onChange={onChange} onBlur={onBlur} />
                 </Col>
             </Row>
-            
+            <TextArea id={"description"} label={"Popis"} className="form-control" value={item?.description || "Popis"} onChange={onChange} onBlur={onBlur} />
             {/* <SimpleCardCapsule title="Položky">
             </SimpleCardCapsule> */}
-            <EditableSectionFields item={item} />
+            {/* <EditableSectionFields item={item} /> */}
             
-            <pre>{JSON.stringify(item, null, 2)}</pre>
+            {/* <pre>{JSON.stringify(item, null, 2)}</pre> */}
             {children}
         </>
     )

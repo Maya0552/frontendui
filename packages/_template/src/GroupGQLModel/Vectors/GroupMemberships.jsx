@@ -91,7 +91,7 @@ export const GroupMemberships = ({ item, children }) => {
     const isoNow = new Date().toISOString()
     const isoNowZ = isoNow.slice(0, isoNow.length - 1)
 
-    const initialItem = {
+    const newItem = {
         groupId: item?.id,
         group: item,
         startdate: isoNowZ
@@ -101,8 +101,8 @@ export const GroupMemberships = ({ item, children }) => {
             <SimpleCardCapsuleRightCorner>
                 <CreateGroupInserMembershipButton 
                     className="btn btn-sm btn-link" 
-                    item={item}
-                    initialItem={initialItem}
+                    item={newItem}
+                    // item={item}
                 >
                     <PlusLg />
                 </CreateGroupInserMembershipButton>

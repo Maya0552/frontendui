@@ -24,18 +24,18 @@ export const PageLink = ({ children, preserveHash = true, preserveSearch = true,
 export const InteractiveMutations = ({ item }) => {
     return (
         <CardCapsule item={item} title="Nástroje">
-            <PageLink className="btn btn-outline-success">Stránka</PageLink>
-            <UpdateLink className="btn btn-outline-success" item={item}>Upravit</UpdateLink>
-            <UpdateButton className="btn btn-outline-success" item={item}>Upravit Dialog</UpdateButton>
-            <CreateButton className="btn btn-outline-success" rbacitem={{}}>Vytvořit nový</CreateButton>
-            <DeleteButton className="btn btn-outline-danger" item={item}>Odstranit</DeleteButton>
+            <PageLink className="btn btn-outline-success">Seznam typů žádostí</PageLink>
+            <UpdateLink className="btn btn-outline-success" item={item}>Upravit tento typ žádosti</UpdateLink>
+            {/* <UpdateButton className="btn btn-outline-success" item={item}>Upravit Dialog</UpdateButton> */}
+            <CreateButton className="btn btn-outline-success" rbacitem={{}}>Vytvořit nový typ žádosti</CreateButton>
+            <DeleteButton className="btn btn-outline-danger" item={item}>Odstranit tento typ žádosti</DeleteButton>
 
 
             <CreateRequestButton
                 className="btn btn-outline-warning" 
-                initialItem={{
+                item={{
                     name: `Požadavek (${item?.name})`,
-                    requesttypeId: item?.id
+                    requestTypeId: item?.id
                 }}
             >
                 Vytvořit požadavek

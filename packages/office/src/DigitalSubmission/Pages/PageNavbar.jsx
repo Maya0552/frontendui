@@ -1,5 +1,5 @@
 import Nav from 'react-bootstrap/Nav'
-import { Link, LinkURI } from '../Components'
+import { Link, LinkURI, VectorItemsURI } from '../Components'
 import { ProxyLink } from '../../../../_template/src/Base/Components/ProxyLink';
 import { NavDropdown } from 'react-bootstrap';
 import { UpdateLink } from '../Mutations/Update';
@@ -116,12 +116,12 @@ export const MyNavDropdown = ({ item }) => {
     const { __typename } = item || {}
     const hasProperType = __typename === "TemplateGQLModel"
     return (
-        <NavDropdown title="Skupiny">
+        <NavDropdown title="Dokumenty">
             <NavDropdown.Item as={ProxyLink} to={VectorItemsURI}>
                 Seznam všech 
             </NavDropdown.Item>
             
-            <NavDropdown.Item as={Link} item={item} action="roles" disabled={!hasProperType}>
+            {/* <NavDropdown.Item as={Link} item={item} action="roles" disabled={!hasProperType}>
                 Role<br/><Link item={item} />
             </NavDropdown.Item>
             <NavDropdown.Item as={Link} item={item} action="subgroups" disabled={!hasProperType}>
@@ -129,7 +129,7 @@ export const MyNavDropdown = ({ item }) => {
             </NavDropdown.Item>
             <NavDropdown.Item as={Link} item={item} action="memberships" disabled={!hasProperType}>
                 Členové<br/><Link item={item} />
-            </NavDropdown.Item>
+            </NavDropdown.Item> */}
         
         
             <NavDropdown.Divider />
@@ -143,9 +143,9 @@ export const MyNavDropdown = ({ item }) => {
             </NavDropdown.Item>
             <NavDropdown.Item 
                 as={CreateButton} 
-                item={item} 
+                // item={item} 
                 disabled={!hasProperType} 
-                initialItem={{
+                item={{
                     group: item,
                     groupId: item?.groupId
                 }}

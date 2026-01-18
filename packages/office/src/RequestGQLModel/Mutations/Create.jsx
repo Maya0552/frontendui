@@ -28,7 +28,7 @@ export const CreateButton = ({
     DefaultContent:defaultContent=DefaultContent,
     readItemURI=ReadItemURI, 
     rbacitem,
-    initialItem={
+    item={
         name: "Nový",
     },
     ...props
@@ -39,18 +39,18 @@ export const CreateButton = ({
         CreateDialog={CreateDialog_}
         readItemURI={readItemURI}
         rbacitem={rbacitem}
-        initialItem={initialItem}
+        item={item}
         mutationAsyncAction={mutationAsyncAction}
         {...permissions}
     />
 }
 
 export const CreateDialog = ({
-    title = "Nov(ý/é)",
+    title = "Nový požadavek",
     mutationAsyncAction=MutationAsyncAction,
     DefaultContent:defaultContent=DefaultContent,
     readItemURI=ReadItemURI, 
-    initialItem,
+    item,
     ...props
 }) => {
     return <BaseCreateDialog 
@@ -58,7 +58,7 @@ export const CreateDialog = ({
         title={title}
         DefaultContent={defaultContent} 
         readItemURI={readItemURI}
-        initialItem={initialItem}
+        item={item}
         mutationAsyncAction={mutationAsyncAction}
     />
 };

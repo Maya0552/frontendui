@@ -1,4 +1,5 @@
 import { Link } from "./Link"
+import { cx } from "./style";
 
 export const CardCapsuleBase = ({ title = null, header = null, children, item }) => {
     return (
@@ -147,7 +148,7 @@ const styles = {
  * - V ukázce kódu máš `id={{id}}`, správně má být `id={id}`.
  * - Pokud chceš podporovat “zbytek props”, předej je na root: `<div {...props} ...>`.
  */
-export const SimpleCardCapsule = ({ id, header, title, children, style, className, ...props }) => {
+export const SimpleCardCapsule0 = ({ id, header, title, children, style, className, ...props }) => {
     return (
         <div id={id} style={{ ...styles.capsuleContainer, ...style }} className={className} >
             <span style={styles.capsuleTitle}>{title || header}</span>
@@ -158,13 +159,96 @@ export const SimpleCardCapsule = ({ id, header, title, children, style, classNam
     );
 };
 
+
+/**
+ * Bootstrap-first capsule/card wrapper.
+ * - Root je `card position-relative`
+ * - "Title badge" je absolutně přes horní hranu (`translate-middle-y`)
+ * - Obsah je `card-body`
+ * - Hook třídy jsou stabilní pro budoucí theme
+ */
+export const SimpleCardCapsule = ({
+    id,
+    header,
+    title,
+    children,
+    className,
+    style,        // nechávám pro kompatibilitu, ale ideálně nepoužívat
+    ...props
+}) => {
+    const text = title || header;
+
+    return (
+        <div
+            id={id}
+            className={cx(
+                "CardCapsule",                // hook
+                "card",
+                "position-relative",
+                "my-3",
+                className
+            )}
+            style={style}
+            {...props}
+        >
+            {text && (
+                <span
+                    className={cx(
+                        "CardCapsule__title",      // hook
+                        "position-absolute",
+                        "top-0",
+                        "start-0",
+                        "translate-middle-y",
+                        "ms-3",
+                        "px-2",
+                        "bg-white",
+                        "text-uppercase",
+                        "fw-bold",
+                        "text-muted"
+                    )}
+                >
+                    {text}
+                </span>
+            )}
+
+            <div className={cx("CardCapsule__body", "card-body")}>
+                <div className={cx("CardCapsule__content", "text-start")}>
+                    {children}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 export const CardCapsule = SimpleCardCapsule
 
-export const SimpleCardCapsuleRightCorner = ({ children }) => {
+export const SimpleCardCapsuleRightCorner0 = ({ children }) => {
     return <span style={styles.capsuleRightCorner}>{children}</span>;
 };
 
-export const SimpleCardCapsuleTitle = ({ children, style, className, ...props }) => {
+export const SimpleCardCapsuleRightCorner = ({ children, className, ...props }) => {
+    return (
+        <span
+            className={cx(
+                "CardCapsule__corner", // hook
+                "position-absolute",
+                "top-0",
+                "end-0",
+                "translate-middle-y",
+                "me-3",
+                "px-2",
+                "bg-white",
+                "text-muted",
+                className
+            )}
+            {...props}
+        >
+            {children}
+        </span>
+    );
+};
+
+export const SimpleCardCapsuleTitle0 = ({ children, style, className, ...props }) => {
     return (
         <span
             style={{ ...styles.capsuleTitle, ...style }}
@@ -176,7 +260,31 @@ export const SimpleCardCapsuleTitle = ({ children, style, className, ...props })
     );
 };
 
-export const SimpleCardCapsuleFooter = ({ children, style, className, ...props }) => {
+export const SimpleCardCapsuleTitle = ({ children, className, ...props }) => {
+    return (
+        <span
+            className={cx(
+                "CardCapsule__title",
+                "position-absolute",
+                "top-0",
+                "start-0",
+                "translate-middle-y",
+                "ms-3",
+                "px-2",
+                "bg-white",
+                "text-uppercase",
+                "fw-bold",
+                "text-muted",
+                className
+            )}
+            {...props}
+        >
+            {children}
+        </span>
+    );
+};
+
+export const SimpleCardCapsuleFooter0 = ({ children, style, className, ...props }) => {
     return (
         <span
             style={{ ...styles.capsuleFooter, ...style }}
@@ -188,11 +296,55 @@ export const SimpleCardCapsuleFooter = ({ children, style, className, ...props }
     );
 };
 
-export const SimpleCardCapsuleFooterCorner = ({ children, style, className, ...props }) => {
+export const SimpleCardCapsuleFooter = ({ children, className, ...props }) => {
+    return (
+        <span
+            className={cx(
+                "CardCapsule__footer",
+                "position-absolute",
+                "bottom-0",
+                "start-0",
+                "ms-3",
+                "px-2",
+                "bg-white",
+                "text-muted",
+                "fw-bold",
+                className
+            )}
+            {...props}
+        >
+            {children}
+        </span>
+    );
+};
+
+export const SimpleCardCapsuleFooterCorner0 = ({ children, style, className, ...props }) => {
     return (
         <span
             style={{ ...styles.capsuleFooterCorner, ...style }}
             className={className}
+            {...props}
+        >
+            {children}
+        </span>
+    );
+};
+
+export const SimpleCardCapsuleFooterCorner = ({ children, className, ...props }) => {
+    return (
+        <span
+            className={cx(
+                "CardCapsule__footerCorner",
+                "position-absolute",
+                "bottom-0",
+                "end-0",
+                "me-3",
+                "px-2",
+                "bg-white",
+                "text-muted",
+                "fw-bold",
+                className
+            )}
             {...props}
         >
             {children}

@@ -4,21 +4,41 @@ import { createAsyncGraphQLAction2 } from "../../../../dynamic/src/Core/createAs
 
 
 const InsertMutationStr = `
-mutation InsertMutation($id: UUID, $name: String, $name_en: String) {
-  result: roleInsert(
-    role: {id: $id, name: $name, nameEn: $name_en}
+mutation roleInsert(
+	$userId: UUID! # null, 
+	$groupId: UUID! # null, 
+	$roletypeId: UUID! # null, 
+	$id: UUID # null, 
+	$deputy: Boolean # null, 
+	$startdate: DateTime # null, 
+	$enddate: DateTime # null
+) {
+  roleInsert(
+	role: {
+	userId: $userId, 
+	groupId: $groupId, 
+	roletypeId: $roletypeId, 
+	id: $id, 
+	deputy: $deputy, 
+	startdate: $startdate, 
+	enddate: $enddate}
   ) {
-    ... on InsertError {
-      failed
-      msg
-      input
-      code
-      location
-      input
-    }
-    ...Large
+    ... on RoleGQLModel { ...Large }
+    ... on RoleGQLModelInsertError { ...RoleGQLModelInsertError }
   }
 }
+
+fragment RoleGQLModelInsertError on RoleGQLModelInsertError {
+  __typename
+  Entity {
+  ...Large
+}
+  msg
+  failed
+  code
+  location
+  input
+  }
 `
 
 const InsertMutation = createQueryStrLazy(`${InsertMutationStr}`, LargeFragment)

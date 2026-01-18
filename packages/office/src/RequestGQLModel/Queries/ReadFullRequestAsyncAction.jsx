@@ -5,13 +5,47 @@ import { createAsyncGraphQLAction2 } from "../../../../dynamic/src/Core/createAs
 const ReadQueryStr = `
 query readFullRequestById($id: UUID!) {
   readFullRequestById: requestById(id: $id) {
-    ...Large
+    
     state {
       ...RequestState
     }
     activeSubmission {
       ...RequestSubmission
     }
+    requestType {
+        __typename
+        id
+        name
+        statemachine { ...StateMachineGQLModel }
+    }
+    histories {
+      __typename
+      id
+        name
+        lastchange
+        createdby {
+          __typename
+          id
+            fullname
+        }
+
+        changedby {
+          __typename
+          id
+            fullname
+        }
+        submission {
+          __typename
+            id
+            name
+        }
+        state {
+          __typename
+          id
+            name
+        }
+    }
+    ...Large
   }
 }
 
@@ -46,9 +80,12 @@ fragment RequestSubmission on DigitalSubmissionGQLModel {
   __typename
   id
   name
+  rbacobjectId
+  form { ...DigitalFormGQLModel }
   submittedSectionsAll {
     ...DigitalSubmissionSectionGQLModel
   }
+    value
   sections {
     ...DigitalSubmissionSectionGQLModel
     sections {
@@ -74,10 +111,15 @@ fragment DigitalSubmissionSectionGQLModel on DigitalSubmissionSectionGQLModel {
   id
   index
   stateId
+  formSectionId
+  
+
   formSection {
     __typename
+    id
     name
     label
+    
     description
     repeatableMin
     repeatableMax
@@ -89,26 +131,16 @@ fragment DigitalSubmissionSectionGQLModel on DigitalSubmissionSectionGQLModel {
   fields {
     ...DigitalSubmissionFieldGQLModel
   }
+    section { __typename id }
 }
 
-fragment DigitalFormFieldGQLModel on DigitalFormFieldGQLModel {
-  __typename
-  name
-  label
-  description
-  required
-  order
-  computed
-  formula
-  typeId
-  backendFormula
-  flattenFormula
-}
 
 fragment DigitalSubmissionFieldGQLModel on DigitalSubmissionFieldGQLModel {
   __typename
   id
   value
+  fieldId
+  sectionId
   lastchange
   changedby {
     __typename
@@ -119,6 +151,116 @@ fragment DigitalSubmissionFieldGQLModel on DigitalSubmissionFieldGQLModel {
   field {
     ...DigitalFormFieldGQLModel
   }
+}
+
+
+fragment DigitalFormGQLModel on DigitalFormGQLModel {
+  __typename
+  id
+  name
+  description
+  lastchange
+  changedby { __typename id fullname }
+  
+  state {
+    __typename
+    id
+    name
+    statemachine { ...StateMachineGQLModel }
+  }
+  
+  sections {
+    ...DigitalFormSectionGQLModel
+    fields {
+      ...DigitalFormFieldGQLModel
+    }
+    sections {
+      ...DigitalFormSectionGQLModel
+      fields {
+        ...DigitalFormFieldGQLModel
+      }
+      sections {
+        ...DigitalFormSectionGQLModel
+        fields {
+          ...DigitalFormFieldGQLModel
+        }
+        sections {
+          ...DigitalFormSectionGQLModel
+          fields {
+            ...DigitalFormFieldGQLModel
+          }
+          sections {
+            ...DigitalFormSectionGQLModel
+            fields {
+              ...DigitalFormFieldGQLModel
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fragment DigitalFormFieldGQLModel on DigitalFormFieldGQLModel {
+__typename
+  id
+  name
+  lastchange
+  changedby { __typename id fullname }    
+  
+  label
+  labelEn
+  flattenFormula
+  backendFormula
+  computed
+  typeId
+  formula
+  order
+  required
+  formId
+  description
+}
+
+fragment DigitalFormSectionGQLModel on DigitalFormSectionGQLModel {
+  __typename
+  id
+  lastchange
+  created
+  createdbyId
+  changedbyId
+  rbacobjectId
+  name
+  path
+  label
+  labelEn
+  description
+  sectionId
+  formId
+  order
+  repeatableMin
+  repeatableMax
+  repeatable   
+ 
+  rbacobject {
+    ...RBRoles
+  }
+  createdby {
+    __typename
+    id
+    fullname
+    }
+
+  changedby {
+    __typename
+    id
+    fullname
+    }
+  form {
+  __typename
+    id
+    name
+    }
+    section { __typename id name }  
 }
 `
 

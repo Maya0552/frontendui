@@ -4,8 +4,8 @@ import { createAsyncGraphQLAction2 } from "../../../../dynamic/src/Core/createAs
 
 
 const InsertMutationStr = `
-mutation requestInsert($requesttypeId: UUID!, $id: UUID) {
-  requestInsert(request: {requesttypeId: $requesttypeId, id: $id}) {
+mutation requestInsert($requestTypeId: UUID!, $id: UUID, $name: String) {
+  requestInsert(request: {requestTypeId: $requestTypeId, id: $id, name: $name}) {
     ... on RequestGQLModelInsertError { ...RequestGQLModelInsertError }
     ... on RequestGQLModel { ...Large }
   }

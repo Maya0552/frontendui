@@ -1,10 +1,10 @@
 import { PageVector } from "./PageVector"
-import { PageUpdateItem } from "./PageUpdateItem"
+import { PageUpdateItem, PageZenUpdateItem } from "./PageUpdateItem"
 import { PageCreateItem } from "./PageCreateItem"
 import { PageReadItem } from "./PageReadItem"
 import { PageDeleteItem } from "./PageDeleteItem"
 
-import { DeleteItemURI, UpdateItemURI } from "../Components"
+import { DeleteItemURI, UpdateItemURI, ZenItemURI, ZenURI } from "../Components"
 import { CreateURI, ReadItemURI, VectorItemsURI } from "../Components"
 
 /**
@@ -47,12 +47,18 @@ export const RequestRouterSegments = [
     },
     {
         path: ReadItemURI,
-        element: (<PageReadItem />),
+        // element: (<PageReadItem />),
+        element: (<PageZenUpdateItem />),
     },
     {
         path: UpdateItemURI,
         element: (<PageUpdateItem />),
     },   
+    {
+        path: ZenItemURI,
+        element: (<PageZenUpdateItem />),
+    },   
+    
     {
         path: DeleteItemURI,
         element: (<PageDeleteItem />),

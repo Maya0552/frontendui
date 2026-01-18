@@ -5,7 +5,6 @@ import { Row } from "../../../../_template/src/Base/Components/Row"
 import { LeftColumn, MiddleColumn } from "@hrbolek/uoisfrontend-shared"
 import { MediumContent as MediumContent_ } from "./MediumContent"
 import { UserRoles } from "../Vectors/UserRoles"
-import { RBACObject } from "../../RoleGQLModel/Components/RBACObject.jsx"
 // import { UpdateLink } from "../Mutations/Update"
 import { UserMembershipsCard } from "../Vectors/UserMemberships"
 import { InteractiveMutations } from "../Mutations/InteractiveMutations"
@@ -13,6 +12,7 @@ import { UpdateButton } from "../Mutations/Update.jsx"
 import { SimpleCardCapsuleRightCorner } from "../../../../_template/src/Base/Components/CardCapsule.jsx"
 import { MegaphoneFill, PencilFill } from "react-bootstrap-icons"
 import { Link } from "./Link.jsx"
+import { RBACObject } from "../../GroupGQLModel/Scalars/RBACObject.jsx"
 
 /**
  * A large card component for displaying detailed content and layout for an template entity.

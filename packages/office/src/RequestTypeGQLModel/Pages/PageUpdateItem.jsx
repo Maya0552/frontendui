@@ -104,7 +104,7 @@ export const UpdateRequestType = ({ item }) => {
     return (<>
         {/* <MediumEditableContent item={item} />         */}
         {/* <UpdateStateMachineBody item={entity || {}} /> */}
-        {JSON.stringify(ReadFullAsyncAction.__metadata)}
+        {/* {JSON.stringify(ReadFullAsyncAction.__metadata)} */}
         <StateMachineFlowVisualization item={item?.statemachine || {}} />
         <UpdateForm item={item?.initialForm || {}}/>
         

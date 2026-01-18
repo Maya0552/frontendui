@@ -40,6 +40,23 @@ fragment Medium on RoleGQLModel {
 const LargeFragmentStr = `
 fragment Large on RoleGQLModel {
   ...Medium
+  group {
+    __typename id name
+    roles {
+        __typename
+        id
+        created
+        lastchange
+        roletypeId
+        roletype { __typename id name }
+        userId
+        user { __typename id fullname }
+        groupId
+        group { __typename id name }
+        changedby { __typename id fullname }
+        createdby { __typename id fullname }
+    }
+  }
 }
 `
 
@@ -87,6 +104,7 @@ fragment RBRoles on RBACObjectGQLModel {
     group {
       __typename
       id
+      name
       grouptype {
         __typename
         id

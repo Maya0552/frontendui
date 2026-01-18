@@ -29,7 +29,7 @@ fragment Medium on RequestGQLModel  {
 
     activeSubmission { __typename id name }
     state { __typename id name }
-
+    requestType { __typename id name }
 }
 `
 
@@ -38,7 +38,31 @@ fragment Large on RequestGQLModel  {
   ...Medium
 
   histories {
-        __typename id name 
+      __typename
+      id
+        name
+        lastchange
+        createdby {
+          __typename
+          id
+            fullname
+        }
+
+        changedby {
+          __typename
+          id
+            fullname
+        }
+        submission {
+          __typename
+            id
+            name
+        }
+        state {
+          __typename
+          id
+            name
+        }
     }
 }
 `
@@ -87,6 +111,7 @@ fragment RBRoles on RBACObjectGQLModel {
     group {
       __typename
       id
+      name
       grouptype {
         __typename
         id

@@ -143,9 +143,9 @@ export const MyNavDropdown = ({ item }) => {
             </NavDropdown.Item>
             <NavDropdown.Item 
                 as={CreateButton} 
-                item={item} 
+                // item={item} 
                 disabled={!hasProperType} 
-                initialItem={{
+                item={{
                     group: item,
                     groupId: item?.groupId
                 }}

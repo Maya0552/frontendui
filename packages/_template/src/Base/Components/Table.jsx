@@ -1,6 +1,10 @@
-import { useMemo } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link } from "./Link";
-
+import { CreateButton, CreateLink } from "../Mutations/Create";
+import { UpdateButton, UpdateLink } from "../Mutations/Update";
+import { DeleteButton } from "../Mutations/Delete";
+import { r } from "happy-dom/lib/PropertySymbol";
 
 const CellId = ({ row, name }) => (
     <td key={name}>
@@ -8,7 +12,7 @@ const CellId = ({ row, name }) => (
     </td>
 )
 
-const CellName = ({ row, name }) => (
+export const CellName = ({ row, name }) => (
     <td key={name}>
         <Link item={row} />
     </td>
@@ -72,96 +76,157 @@ export const buildTableDef = (data) => {
 
     result["tools"] = {
         label: "Nástroje",
-        component: () => <td><KebabMenu actions={[
-            { label: "Editovat", onClick: () => console.log("edit") },
-            { label: "Smazat", onClick: () => console.log("delete") },
-            { label: "Detail", onClick: () => console.log("detail") },
+        component: ({row}) => <td><KebabMenu actions={[
+            // { label: "Editovat", onClick: () => console.log("edit") },
+            // { label: "Smazat", onClick: () => console.log("delete") },
+            // { label: "Detail", onClick: () => console.log("detail") },
+            { children: <Link 
+                    className="btn btn-sm btn-outline-secondary border-0 text-start w-100"
+                    item={row}
+                >Detail</Link> },
+            { children: <UpdateLink 
+                className="btn btn-sm btn-outline-secondary border-0 text-start w-100"
+                item={row}
+                action="edit"
+                >Editovat</UpdateLink> },
+            { children: <UpdateButton 
+                    className="btn btn-sm btn-outline-secondary border-0 text-start w-100"
+                    item={row}
+                >Editovat (zde)</UpdateButton> },
+            { children: <DeleteButton 
+                className="btn btn-sm btn-outline-secondary border-0 text-start w-100"  
+                >Smazat</DeleteButton> },
         ]} /></td>,
     }
 
     return result
 }
 
-import { useState, useRef, useEffect } from "react";
 
 export const KebabMenu = ({ actions = [] }) => {
     const [open, setOpen] = useState(false);
-    const ref = useRef(null);
+    const btnRef = useRef(null);
+    const menuRef = useRef(null);
+    const [pos, setPos] = useState({ left: 0, top: 0 });
 
-    // zavření při kliku mimo
+    const close = () => setOpen(false);
+
+    // zavření při kliku mimo (funguje i s portalem)
     useEffect(() => {
-        const handleClickOutside = (e) => {
-            if (ref.current && !ref.current.contains(e.target)) {
-                setOpen(false);
-            }
+        if (!open) return;
+
+        const onMouseDown = (e) => {
+            const btn = btnRef.current;
+            const menu = menuRef.current;
+            if (!btn || !menu) return;
+
+            if (btn.contains(e.target)) return;
+            if (menu.contains(e.target)) return;
+
+            close();
         };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+
+        const onKeyDown = (e) => {
+            if (e.key === "Escape") close();
+        };
+
+        document.addEventListener("mousedown", onMouseDown);
+        document.addEventListener("keydown", onKeyDown);
+        return () => {
+            document.removeEventListener("mousedown", onMouseDown);
+            document.removeEventListener("keydown", onKeyDown);
+        };
+    }, [open]);
+
+    // spočítat pozici po otevření + při scroll/resize
+    useLayoutEffect(() => {
+        if (!open) return;
+
+        const update = () => {
+            const btn = btnRef.current;
+            if (!btn) return;
+
+            const r = btn.getBoundingClientRect();
+            // menu zarovnané doprava k tlačítku, pod tlačítkem
+            setPos({
+                left: r.right + window.scrollX,
+                top: r.bottom + window.scrollY,
+            });
+        };
+
+        update();
+
+        window.addEventListener("resize", update);
+        // scroll na capture, aby to fungovalo i při scrollu uvnitř wrapperů
+        window.addEventListener("scroll", update, true);
+
+        return () => {
+            window.removeEventListener("resize", update);
+            window.removeEventListener("scroll", update, true);
+        };
+    }, [open]);
+
+    const menu = open ? (
+        <div
+            ref={menuRef}
+            style={{
+                position: "absolute",
+                left: pos.left,
+                top: pos.top,
+                transform: "translateX(-100%)", // right align
+                background: "white",
+                border: "1px solid #ddd",
+                borderRadius: 4,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                zIndex: 2000,
+                minWidth: 140,
+            }}
+            role="menu"
+        >
+            {actions.map((action, i) => {
+                const children = action?.children;
+                if (children) return <div key={i}>{children}</div>;
+
+                return (
+                    <button
+                        key={i}
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary border-0 text-start w-100"
+                        onClick={() => {
+                            close();
+                            action?.onClick?.();
+                        }}
+                        style={{
+                            padding: "8px 12px",
+                            textDecoration: "none",
+                        }}
+                        role="menuitem"
+                    >
+                        {action?.label}
+                    </button>
+                );
+            })}
+        </div>
+    ) : null;
 
     return (
-        <div ref={ref} style={{ position: "relative", display: "inline-block" }}>
+        <>
             <button
-            className="btn btn-sm btn-outline-secondary"
+                ref={btnRef}
+                className="btn btn-sm btn-outline-secondary border-1"
                 onClick={() => setOpen((o) => !o)}
-                // style={{
-                //     border: "none",
-                //     background: "transparent",
-                //     cursor: "pointer",
-                //     fontSize: "20px",
-                //     lineHeight: 1,
-                //     padding: "4px 8px",
-                // }}
+                aria-expanded={open}
+                aria-haspopup="menu"
                 aria-label="Menu"
+                type="button"
             >
                 ⋮
             </button>
 
-            {open && (
-                <div
-                    style={{
-                        position: "absolute",
-                        right: 0,
-                        top: "100%",
-                        background: "white",
-                        border: "1px solid #ddd",
-                        borderRadius: 4,
-                        boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                        zIndex: 1000,
-                        minWidth: 140,
-                        minHeight: 20
-                    }}
-                >
-                    {actions.map((action, i) => {
-                        const children = action?.children
-                        if (children) {
-                            return <>{children}</>
-                        }
-                        return (
-                            <div
-                                key={i}
-                                onClick={() => {
-                                    setOpen(false);
-                                    action.onClick();
-                                }}
-                                style={{
-                                    padding: "8px 12px",
-                                    cursor: "pointer",
-                                    whiteSpace: "nowrap",
-                                }}
-                                onMouseEnter={(e) => (e.currentTarget.style.background = "#f5f5f5")}
-                                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                            >
-                                {action.label}
-                            </div>
-                        )
-                    })}
-                </div>
-            )}
-        </div>
+            {open ? createPortal(menu, document.body) : null}
+        </>
     );
 };
-
 
 export const TableRow = ({ row, table_def }) => {
     return (

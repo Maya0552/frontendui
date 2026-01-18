@@ -85,7 +85,15 @@ export const ItemsFromGraphQLResultFactory = (ItemAction = ItemActions.item_upda
         }
 
         // Normalizace do ItemSlice – každá entita jde přes item_add (upsert)
-        dispatch(ItemAction(entities));
+        
+
+        // console.log("dataRoot", dataRoot)
+        // dispatch(ItemAction(entities));
+        const toUpdate = Object.values(dataRoot).filter(Boolean)
+        dispatch(ItemAction(toUpdate));
+
+
+
         // for (const entity of entities) {
         //     // dispatch(ItemActions.item_add(entity));
         //     dispatch(ItemAction(entity));

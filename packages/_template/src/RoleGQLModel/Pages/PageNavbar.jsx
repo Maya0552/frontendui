@@ -135,7 +135,7 @@ export const MyNavDropdown = ({ item }) => {
             <NavDropdown.Item 
                 as={CreateLink} 
                 item={item} 
-                initialItem={{
+                item={{
                     name: "Nové oprávnění",
                 }}
                 disabled={!hasProperType}
@@ -147,7 +147,7 @@ export const MyNavDropdown = ({ item }) => {
                 as={AddRoleOnGroupButton} 
                 item={item} 
                 rbacitem={item}
-                initialItem={{
+                item={{
                     group: item,
                     groupId: item?.id,
                 }}

@@ -134,7 +134,7 @@ export const MyNavDropdown = ({ item }) => {
             <NavDropdown.Item 
                 as={CreateLink} 
                 item={item} 
-                initialItem={{
+                item={{
                     name: "Nový typ",
                 }}
                 disabled={!hasProperType}

@@ -44,6 +44,7 @@ export const DeleteButton = ({
         <BaseDeleteButton 
             {...props} 
             DefaultContent={DefaultContent_} 
+            Dialog={DeleteDialog}
             mutationAsyncAction={mutationAsyncAction}
             vectorItemsURI={vectorItemsURI}
             onOk={onOk}

@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectItemById } from "../Store/ItemSlice"; // uprav cestu
 import { useGQLClient } from "../Store";
+import { useRef } from "react";
 
 // jednoduchý shallowEqual pro porovnání vars
 const shallowEqual = (a, b) => {
@@ -19,98 +20,92 @@ const shallowEqual = (a, b) => {
 
 
 
-const useAsyncThunkActionFactory = (useDispatchHook, useSelectorHook) => 
-(
-    AsyncAction,
-    vars,
-    options = {}
-) => {
-    const { deferred = false, network = true } = options;
-    const dispatch = useDispatchHook();
-    const gqlClient = useGQLClient();
+const useAsyncThunkActionFactory = (useDispatchHook, useSelectorHook) =>
+    (
+        AsyncAction,
+        vars,
+        options = {}
+    ) => {
+        const { deferred = false, network = true } = options;
+        const dispatch = useDispatchHook();
+        const gqlClient = useGQLClient();
 
-    // stabilizovaná verze vars (aby každé nové {} nebo {id} neznamenalo novou fetch smyčku)
-    const [varsState, setVarsState] = useState(vars || {});
+        // stabilizovaná verze vars (aby každé nové {} nebo {id} neznamenalo novou fetch smyčku)
+        const [varsState, setVarsState] = useState(vars || {});
 
-    useEffect(() => {
-        const nextVars = vars || {};
-        if (!shallowEqual(nextVars, varsState)) {
-            setVarsState(nextVars);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [vars]);
-
-    // základní stav hooku
-    const [state, setState] = useState({
-        loading: !deferred && network,
-        error: null,
-        data: null,
-    });
-
-    // když ve varsState existuje id, přečteme entitu z ItemSlice
-    const id = varsState && varsState.id;
-    const entity = useSelectorHook((rootState) => {
-        const result = id != null ? selectItemById(rootState, id) : null
-        // console.log(id, rootState, result)
-        // console.log("useSelectorHook found", id, result)
-        return result
-    });
-
-    const run = useCallback(
-        (overrideVars) => {
-            // console.log("run.overrideVars", overrideVars, AsyncAction)
-
-            if (!network || !AsyncAction) {
-                return Promise.resolve(null);
+        useEffect(() => {
+            const nextVars = vars || {};
+            if (!shallowEqual(nextVars, varsState)) {
+                setVarsState(nextVars);
             }
+            // eslint-disable-next-line react-hooks/exhaustive-deps
+        }, [vars]);
+
+        // základní stav hooku
+        const [state, setState] = useState({
+            loading: !deferred && network,
+            error: null,
+            data: null,
+        });
+
+        // když ve varsState existuje id, přečteme entitu z ItemSlice
+        const id = varsState && varsState.id;
+        const entity = useSelectorHook((rootState) => {
+            const result = id != null ? selectItemById(rootState, id) : null
+            // console.log(id, rootState, result)
+            // console.log("useSelectorHook found", id, result)
+            return result
+        });
+
+        const inFlightRef = useRef(new Map());
+
+        const run = useCallback((overrideVars) => {
+            if (!network || !AsyncAction) return Promise.resolve(null);
 
             const mergedVars =
                 overrideVars === undefined
                     ? varsState
                     : { ...(varsState || {}), ...overrideVars };
 
-            setState((prev) => ({
-                ...prev,
-                loading: true,
-                error: null,
-            }));
-            // console.log("useAsyncThunkAction run", AsyncAction?.name, overrideVars, '=>', mergedVars);
-            return dispatch(AsyncAction(mergedVars, gqlClient))
+            const key = JSON.stringify(mergedVars);
+
+            const existing = inFlightRef.current.get(key);
+            if (existing) return existing;
+
+            setState(prev => ({ ...prev, loading: true, error: null }));
+
+            const p = dispatch(AsyncAction(mergedVars, gqlClient))
                 .then((result) => {
-                    setState({
-                        loading: false,
-                        error: null,
-                        data: result,
-                    });
+                    setState({ loading: false, error: null, data: result });
                     return result;
                 })
                 .catch((err) => {
-                    setState({
-                        loading: false,
-                        error: err,
-                        data: null,
-                    });
+                    setState({ loading: false, error: err, data: null });
                     throw err;
+                })
+                .finally(() => {
+                    inFlightRef.current.delete(key);
                 });
-        },
-        [AsyncAction, gqlClient, dispatch, network, varsState]
-    );
 
-    // auto-fetch na mount / změnu varsState (ale ne při každém renderu díky shallowEqual)
-    useEffect(() => {
-        if (!deferred && network) {
-            run();
-        }
-    }, [deferred, network, run]);
+            inFlightRef.current.set(key, p);
+            return p;
+        }, [AsyncAction, gqlClient, dispatch, network, varsState]);
 
-    return {
-        loading: state.loading,
-        error: state.error,
-        data: state.data,
-        entity, // item z ItemSlice, pokud máme id
-        run,
+        // auto-fetch na mount / změnu varsState (ale ne při každém renderu díky shallowEqual)
+        useEffect(() => {
+            if (!deferred && network) {
+                run();
+            }
+        }, [deferred, network, run]);
+
+        return {
+            loading: state.loading,
+            error: state.error,
+            data: state.data,
+            entity, // item z ItemSlice, pokud máme id
+            run,
+        };
     };
-};
 
 /**
  * Vytvoří "lokální" dispatch pro thunk akce, bez Redux storu.

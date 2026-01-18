@@ -47,7 +47,8 @@ export const RequestTypeRouterSegments = [
     },
     {
         path: ReadItemURI,
-        element: (<PageReadItem />),
+        // element: (<PageReadItem />),
+        element: (<PageUpdateItem />),
     },
     {
         path: UpdateItemURI,

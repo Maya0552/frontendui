@@ -15,6 +15,8 @@ fragment Link on RoleTypeGQLModel {
   mastertypeId
   mastertype {
     __typename
+    id 
+    name
   }
   
 }
@@ -82,6 +84,7 @@ fragment RBRoles on RBACObjectGQLModel {
     group {
       __typename
       id
+      name
       grouptype {
         __typename
         id

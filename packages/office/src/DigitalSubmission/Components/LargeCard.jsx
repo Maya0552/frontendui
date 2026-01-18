@@ -6,6 +6,7 @@ import { Row } from "../../../../_template/src/Base/Components/Row"
 import { MediumContent as MediumContent_ } from "./MediumContent"
 import { InteractiveMutations } from '../Mutations/InteractiveMutations'
 import { LeftColumn, MiddleColumn } from "../../../../_template/src/Base/Components/Col"
+import { RBACObject } from "../../../../_template/src/GroupGQLModel/Scalars/RBACObject"
 /**
  * A large card component for displaying detailed content and layout for an template entity.
  *
@@ -39,6 +40,7 @@ export const LargeCard = ({ item, children, CardCapsule=CardCapsule_, MediumCont
                     <CardCapsule item={item} title="Detail">
                         <MediumContent item={item} />
                     </CardCapsule>
+                    <RBACObject item={item || {}} />
                     <InteractiveMutations item={item} />
                 </LeftColumn>
                 <MiddleColumn>

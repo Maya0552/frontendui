@@ -15,6 +15,7 @@ export const createAsyncGraphQLAction2 = (graphQLQuery, params=addItemsFromGraph
         // nodes = graphQLQuery?.__metadata?.nodes
         graphQLQuery = graphQLQuery()
         graphQLQueryStr = graphQLQueryStr || graphQLQuery
+        // graphQLQueryStr = graphQLQuery
     }
 
     // If `params` is a function, treat it as middleware
@@ -67,6 +68,6 @@ export const createAsyncGraphQLAction2 = (graphQLQuery, params=addItemsFromGraph
         }
         
     };
-    AsyncAction.__metadata = {queryStr: graphQLQueryStr}
+    AsyncAction.__metadata = {queryStr: graphQLQueryStr, graphQLQuery: graphQLQuery}
     return AsyncAction;
 };

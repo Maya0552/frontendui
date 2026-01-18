@@ -1,8 +1,9 @@
 import { Col } from "../../../../_template/src/Base/Components/Col"
 import { Row } from "../../../../_template/src/Base/Components/Row"
-import { Link } from "./Link"
+import { Link as RequestLink} from "./Link"
 import { MediumContent as MediumContent_ } from "../../../../_template/src/Base/Components/MediumContent"
-import { Attribute } from "../../../../_template/src/Base/Components/Attribute"
+import { Attribute, formatDateTime } from "../../../../_template/src/Base/Components/Attribute"
+import { Link } from "../../../../_template/src/Base/Components"
 
 /**
  * A component that displays medium-level content for an template entity.
@@ -38,13 +39,26 @@ import { Attribute } from "../../../../_template/src/Base/Components/Attribute"
 export const MediumContent = ({ item }) => {
     return (
         <>
-            <MediumContent_ item={item} />
-            <hr/>
-            <Attribute label="name">
-                <Link item={item} />
+            {/* <MediumContent_ item={item} />
+            <hr/> */}
+            <Attribute label="Název">
+                <RequestLink item={item} />
             </Attribute>
-            <Attribute label=" ">
-                L
+            <Attribute label="Aktuální formulář">
+                <Link item={item?.activeSubmission} />
+            </Attribute>
+            <Attribute label="Typ požadavku">
+                <Link item={item?.requestType} />
+            </Attribute>
+            <Attribute label="Stavový popis">
+                <Link item={item?.state?.statemachine} />
+            </Attribute>
+            <hr/>
+            <Attribute label="Vytvořeno">
+                <Link item={item?.createdby} />@{formatDateTime(item.created)}
+            </Attribute>
+            <Attribute label="Změněno">
+                <Link item={item?.createdby} />@{formatDateTime(item.lastchange)}
             </Attribute>
         </>
     )

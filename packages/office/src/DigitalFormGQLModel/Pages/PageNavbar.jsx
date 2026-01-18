@@ -121,7 +121,7 @@ export const MyNavDropdown = ({ item }) => {
                 Seznam všech 
             </NavDropdown.Item>
             
-            <NavDropdown.Item as={Link} item={item} action="roles" disabled={!hasProperType}>
+            {/* <NavDropdown.Item as={Link} item={item} action="roles" disabled={!hasProperType}>
                 Role<br/><Link item={item} />
             </NavDropdown.Item>
             <NavDropdown.Item as={Link} item={item} action="subgroups" disabled={!hasProperType}>
@@ -129,7 +129,7 @@ export const MyNavDropdown = ({ item }) => {
             </NavDropdown.Item>
             <NavDropdown.Item as={Link} item={item} action="memberships" disabled={!hasProperType}>
                 Členové<br/><Link item={item} />
-            </NavDropdown.Item>
+            </NavDropdown.Item> */}
         
         
             <NavDropdown.Divider />
@@ -143,9 +143,9 @@ export const MyNavDropdown = ({ item }) => {
             </NavDropdown.Item>
             <NavDropdown.Item 
                 as={CreateButton} 
-                item={item} 
+                // item={item} 
                 disabled={!hasProperType} 
-                initialItem={{
+                item={{
                     group: item,
                     groupId: item?.groupId
                 }}

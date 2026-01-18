@@ -106,8 +106,8 @@ export const CreateGroupInserMembershipButton = ({
     CreateDialog:CreateDialog_=CreateGroupInserMembershipDialog,
     DefaultContent:defaultContent=GroupInserMembershipContent,
     readItemURI=ReadItemURI, 
+    // item={},
     item={},
-    initialItem={},
     ...props
 }) => {
     // console.log("CreateGroupInserMembershipButton.premission test", item, permissions?.oneOfRoles)
@@ -118,7 +118,7 @@ export const CreateGroupInserMembershipButton = ({
         readItemURI={readItemURI}
         mutationAsyncAction={mutationAsyncAction}
         rbacitem={item}
-        initialItem={initialItem}
+        item={item}
         {...permissions}
     />
 }
@@ -127,13 +127,13 @@ export const CreateGroupInserMembershipDialog = ({
     mutationAsyncAction=MutationAsyncAction,
     DefaultContent:defaultContent=GroupInserMembershipContent,
     readItemURI=ReadItemURI, 
-    initialItem={},
+    item={},
     ...props
 }) => {
     return <BaseCreateDialog 
         {...props} 
         title="Nové členství"
-        initialItem={initialItem}
+        item={item}
         DefaultContent={defaultContent} 
         readItemURI={readItemURI}
         mutationAsyncAction={mutationAsyncAction}

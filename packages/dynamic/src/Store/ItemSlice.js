@@ -104,41 +104,59 @@ export const ItemSlice = createSlice({
             const items = asArray(action.payload);
             if (items.length === 0) return;
 
+            const now = Date.now();
+
+            const stripUndefined = (obj) => {
+                if (!obj || typeof obj !== "object") return obj;
+                const out = {};
+                for (const [k, v] of Object.entries(obj)) {
+                    if (v !== undefined) out[k] = v;
+                }
+                return out;
+            };
+
             // batch větev
             if (items.length > 1) {
                 const updates = [];
-                for (const newItem of items) {
-                    const id = newItem?.id;
+
+                for (const raw of items) {
+                    const id = raw?.id;
                     if (!id) continue;
 
                     const prev = state.entities[id] || {};
+                    const cleaned = stripUndefined(raw); // <-- klíčové
+
                     updates.push({
                         id,
                         changes: {
-                            ...newItem,
-                            _updatedAt: Date.now(),
+                            ...cleaned,
+                            _updatedAt: now,
                             _version: (prev._version ?? 0) + 1,
                         },
                     });
                 }
 
-                if (updates.length > 0) itemsAdapter.updateMany(state, updates);
+                if (updates.length) itemsAdapter.updateMany(state, updates);
+                // if (updates.length) itemsAdapter.upsertMany(state, updates);
                 return;
             }
 
-            // single větev (stejné jako dřív)
-            const newItem = items[0];
-            const id = newItem?.id;
+            // single větev
+            const raw = items[0];
+            const id = raw?.id;
             if (!id) return;
 
             const prev = state.entities[id] || {};
-            const changes = {
-                ...newItem,
-                _updatedAt: Date.now(),
-                _version: (prev._version ?? 0) + 1,
-            };
+            const cleaned = stripUndefined(raw); // <-- klíčové
 
-            itemsAdapter.updateOne(state, { id, changes });
+            itemsAdapter.updateOne(state, {
+                id,
+                changes: {
+                    ...cleaned,
+                    _updatedAt: now,
+                    _version: (prev._version ?? 0) + 1,
+                },
+            });
         },
 
         /**
@@ -239,6 +257,100 @@ export const ItemSlice = createSlice({
                     _version: (parent._version ?? 0) + 1,
                 },
             });
+        },
+
+
+        /**
+         * Update childItem uvnitř uloženého mainItem.
+         * payload: { mainItem, childItem }
+         *
+         * mainItem: objekt s { id } (minimálně) – určuje parenta v `state.entities`
+         * childItem: objekt s { id, __typename } – hledaný a updatovaný child
+         *
+         * Shoda child objektů je dána: child.id === childItem.id && child.__typename === childItem.__typename
+         *
+         * Chování:
+         * - projde rekurzivně celý uložený mainItem (včetně vnořených objektů a polí)
+         * - kdekoliv narazí na matching child objekt, provede merge: { ...oldChild, ...childItem }
+         * - aktualizuje mainItem ve store (_updatedAt, _version)
+         * - volitelně také normalizuje child entitu do `entities` přes upsertItem (pokud má __typename)
+         */
+        item_updateChildInMain: (state, action) => {
+            const { mainItem, childItem } = action.payload || {};
+            const mainId = mainItem?.id;
+            const childId = childItem?.id;
+            const childTypename = childItem?.__typename;
+
+            if (!mainId || !childId || !childTypename) return;
+
+            const prevMain = state.entities[mainId];
+            if (!prevMain) return;
+
+            const isMatch = (obj) =>
+                obj &&
+                typeof obj === "object" &&
+                obj.id === childId &&
+                obj.__typename === childTypename;
+
+            // Rekurzivní "deep update" s copy-on-write: vytváří kopie jen když dojde ke změně
+            const deepUpdate = (node) => {
+                if (!node) return node;
+
+                // Array
+                if (Array.isArray(node)) {
+                    let changed = false;
+                    const nextArr = node.map((x) => {
+                        const nx = deepUpdate(x);
+                        if (nx !== x) changed = true;
+                        return nx;
+                    });
+                    return changed ? nextArr : node;
+                }
+
+                // Object (pozor na Date apod. – tady předpokládáme plain objekty)
+                if (typeof node === "object") {
+                    // pokud je to přímo child objekt, proveď merge
+                    if (isMatch(node)) {
+                        return { ...node, ...childItem };
+                    }
+
+                    let changed = false;
+                    const nextObj = { ...node };
+                    for (const [k, v] of Object.entries(node)) {
+                        const nv = deepUpdate(v);
+                        if (nv !== v) {
+                            nextObj[k] = nv;
+                            changed = true;
+                        }
+                    }
+                    return changed ? nextObj : node;
+                }
+
+                // Primitive
+                return node;
+            };
+
+            const updatedMain = deepUpdate(prevMain);
+
+            // Pokud se nic nezměnilo, nic neukládej
+            if (updatedMain === prevMain) return;
+
+            const now = Date.now();
+
+            itemsAdapter.updateOne(state, {
+                id: mainId,
+                changes: {
+                    ...updatedMain,
+                    _updatedAt: now,
+                    _version: (prevMain._version ?? 0) + 1,
+                },
+            });
+
+            // Volitelná normalizace child entity do store (pokud ji chceš mít i v entities)
+            // (je bezpečné i když run/mutace nevrací entitu; tady rovnou upsertujeme to, co máme)
+            //   if (childItem && typeof childItem === "object" && childItem.__typename) {
+            //     upsertItem(state, childItem);
+            //   }
         },
     },
 });

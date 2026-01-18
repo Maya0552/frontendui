@@ -20,12 +20,12 @@ const UserMembershipsTableSubPage = ({ item }) => {
     const isoNow = new Date().toISOString()
     const isoNowZ = isoNow.slice(0, isoNow.length - 1)
 
-    const initialItem = {
-        userId: item?.id,
-        user: item,
-        startdate: isoNowZ
-    }
-    console.log("initialItem", initialItem)
+    // const item = {
+    //     userId: item?.id,
+    //     user: item,
+    //     startdate: isoNowZ
+    // }
+    console.log("item", item)
     return (
         <UserMembershipsTable item={item}>
             {/* <SimpleCardCapsuleRightCorner>
@@ -33,7 +33,7 @@ const UserMembershipsTableSubPage = ({ item }) => {
                 <CreateUserInserMembershipButton 
                     item={{...item, __token: "CreateUserInserMembershipButton"}} 
                     className="btn btn-sm btn-link"
-                    initialItem={initialItem}
+                    item={item}
                 >
                     <PlusLg />
                 </CreateUserInserMembershipButton>

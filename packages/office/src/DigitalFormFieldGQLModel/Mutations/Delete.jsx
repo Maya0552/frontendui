@@ -31,6 +31,7 @@ export const DeleteLink = ({
 export const DeleteButton = ({
     mutationAsyncAction=MutationAsyncAction,
     DefaultContent:DefaultContent_=DefaultContent,
+    Dialog=DeleteDialog,
     vectorItemsURI=ListURI,
     ...props 
 }) => {
@@ -40,6 +41,7 @@ export const DeleteButton = ({
             DefaultContent={DefaultContent_} 
             mutationAsyncAction={mutationAsyncAction}
             vectorItemsURI={vectorItemsURI}
+            Dialog={Dialog}
             {...permissions}
         />
     )

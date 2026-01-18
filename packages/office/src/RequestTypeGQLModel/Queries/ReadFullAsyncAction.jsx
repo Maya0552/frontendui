@@ -87,15 +87,49 @@ __typename
   order
   required
   formId
-  
+  description
 }
 
 fragment DigitalFormSectionGQLModel on DigitalFormSectionGQLModel {
   __typename
   id
-  name
   lastchange
-  changedby { __typename id fullname }  
+  created
+  createdbyId
+  changedbyId
+  rbacobjectId
+  name
+  path
+  label
+  labelEn
+  description
+  sectionId
+  formId
+  order
+  repeatableMin
+  repeatableMax
+  repeatable   
+ 
+  rbacobject {
+    ...RBRoles
+  }
+  createdby {
+    __typename
+    id
+    fullname
+    }
+
+  changedby {
+    __typename
+    id
+    fullname
+    }
+  form {
+  __typename
+    id
+    name
+    }
+    section { __typename id name }  
 }
 
 fragment StateGQLModel on StateGQLModel {

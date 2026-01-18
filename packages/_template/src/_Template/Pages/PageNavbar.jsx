@@ -145,7 +145,7 @@ export const MyNavDropdown = ({ item }) => {
                 as={CreateButton} 
                 item={item} 
                 disabled={!hasProperType} 
-                initialItem={{
+                item={{
                     group: item,
                     groupId: item?.groupId
                 }}

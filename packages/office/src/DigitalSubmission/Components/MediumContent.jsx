@@ -2,7 +2,7 @@ import { Col } from "../../../../_template/src/Base/Components/Col"
 import { Row } from "../../../../_template/src/Base/Components/Row"
 import { Link } from "./Link"
 import { MediumContent as BaseMediumContent } from "../../../../_template/src/Base/Components/MediumContent"
-import { Attribute } from "../../../../_template/src/Base/Components/Attribute"
+import { Attribute, formatDateTime } from "../../../../_template/src/Base/Components/Attribute"
 import { Link as BaseLink } from "../../../../_template/src/Base/Components"
 
 /**
@@ -40,12 +40,23 @@ import { Link as BaseLink } from "../../../../_template/src/Base/Components"
 
 export const MediumContent = ({ item, children}) => {
     return (<>
+        <Attribute label="Název">
+            <BaseLink item={item} />
+        </Attribute>
 
         <Attribute label="Formulář">
             <BaseLink item={item?.form} />
         </Attribute>
-        <hr />
+        <hr/>
+        <Attribute label="Vytvořeno">
+            <BaseLink item={item?.createdby} />@{formatDateTime(item.created)}
+        </Attribute>
+        <Attribute label="Změněno">
+            <BaseLink item={item?.createdby} />@{formatDateTime(item.lastchange)}
+        </Attribute>
+
+        {/* <hr />
         {children}
-        <BaseMediumContent item={item} />
+        <BaseMediumContent item={item} /> */}
     </>)
 }

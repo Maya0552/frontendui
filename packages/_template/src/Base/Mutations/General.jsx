@@ -70,7 +70,7 @@ export const GeneralButton = ({
     onOk: handleOk,
     onCancel: handleCancel,
     uriPattern,
-    initialItem,
+    item,
     ...props 
 }) => {
     if (typeof mutationAsyncAction !== "function")
@@ -79,13 +79,13 @@ export const GeneralButton = ({
     return (
         <PermissionGate oneOfRoles={oneOfRoles} mode={mode} item={rbacitem}>
             {/* {handleOk && <>O</>} */}
-            {/* {JSON.stringify(initialItem)} */}
+            {/* {JSON.stringify(item)} */}
             <GeneralButtonBody 
                 children={children}
                 mutationAsyncAction={mutationAsyncAction}
                 Dialog={Dialog_}
                 DefaultContent={DefaultContent_}
-                initialItem={initialItem}
+                item={item}
                 uriPattern={uriPattern}
                 rbacitem={rbacitem}
                 onOk={handleOk}
@@ -103,20 +103,21 @@ export const GeneralDialog = ({
     onOk: handleOk,
     onCancel: handleCancel,
     DefaultContent: DefaultContent_ = DefaultContent,
-    initialItem,
+    item,
     children,
     ...props
 }) => {
 
-    const [draftItem, setDraftItem] = useState(initialItem);
+    const [draftItem, setDraftItem] = useState(item);
 
     useEffect(() => {
         setDraftItem((prev) => {
-            const base = initialItem ?? {};
+            console.log("GeneralDialog.useEffect", item)
+            const base = item ?? {};
             return { ...base, id: base.id ?? safeId() };
         })
         
-    }, [initialItem, setDraftItem])
+    }, [item, setDraftItem])
 
 
     const handleChange = useCallback((e) => {
@@ -147,7 +148,12 @@ export const GeneralDialog = ({
         >
             <DefaultContent_ item={draftItem} onChange={handleChange} onBlur={handleBlur}>
                 {children}
+                
             </DefaultContent_>
+                {/* <hr/>
+                item: {JSON.stringify(item)}
+                <hr/>
+                draftItem: {JSON.stringify(draftItem)} */}
         </Dialog>
     );
 };
@@ -160,7 +166,7 @@ export const GeneralButtonBody = ({
     Dialog: Dialog_,
     DefaultContent: DefaultContent_=DefaultContent,
     uriPattern,
-    initialItem,
+    item,
     onOk: handleOk,
     onCancel: handleCancel,
     ...props 
@@ -177,7 +183,7 @@ export const GeneralButtonBody = ({
         error,
         // entity,
         run
-    } = useAsyncThunkAction(mutationAsyncAction, initialItem, { deferred: true });
+    } = useAsyncThunkAction(mutationAsyncAction, item, { deferred: true });
     
     const navigate = useNavigate()
 
@@ -202,7 +208,7 @@ export const GeneralButtonBody = ({
         return (
             <>
                 <AsyncStateIndicator error={error} loading={saving} text={"Ukládám"} />
-                {/* {JSON.stringify(initialItem)} */}
+                {/* {JSON.stringify(item?.id)} */}
                 {/* {props?.onOk && <>O</>} */}
                 <button {...props} onClick={handleShow}>{children || "Vytvořit nový"}</button>
                 {visible && Dialog_ &&(
@@ -211,7 +217,7 @@ export const GeneralButtonBody = ({
                         onCancel={handleCancel_}
                         mutationAsyncAction={mutationAsyncAction}
                         uriPattern={uriPattern}
-                        initialItem={initialItem}
+                        item={item}
                     />
                 )}
                 {visible && !Dialog_ && (
@@ -221,7 +227,7 @@ export const GeneralButtonBody = ({
                         mutationAsyncAction={mutationAsyncAction}
                         DefaultContent={DefaultContent_}
                         uriPattern={uriPattern}
-                        initialItem={initialItem}
+                        item={item}
                     />
                 )}
             </>

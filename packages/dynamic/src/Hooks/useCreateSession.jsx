@@ -5,7 +5,7 @@ import { useEditAction } from "./useEditAction";
 /**
  * @param {{
  *  mutationAsyncAction: any,
- *  initialItem?: object,
+ *  item?: object,
  *  onAfterConfirm?: (result: any, draft: any) => (void|Promise<void>),
  *  onAfterCancel?: () => (void|Promise<void>),
  *  readUri?: string,
@@ -14,7 +14,7 @@ import { useEditAction } from "./useEditAction";
  */
 export function useCreateSession({
     mutationAsyncAction,
-    initialItem,
+    item,
     onAfterConfirm,
     onAfterCancel,
     readUri,
@@ -28,14 +28,14 @@ export function useCreateSession({
 
     const baseItem = useMemo(() => {
         const result = (
-            initialItem ?? {
+            item ?? {
                 id: crypto.randomUUID(),
                 name: defaultName,
             }
         )
         result.id = result?.id ?? crypto.randomUUID()
         return result;
-    }, [initialItem, defaultName]);
+    }, [item, defaultName]);
 
     const [newItem, setNewItem] = useState(baseItem);
 
@@ -57,19 +57,22 @@ export function useCreateSession({
         setNewItem((prev) => ({ ...prev, id: crypto.randomUUID() }));
 
         if (onAfterConfirm) {
+            console.log("useCreateSession using onAfterConfirm")
             await onAfterConfirm(result, draft);
             // return result;
         }
-
-        // default: navigace na read
-        console.log("going to navigate", readUri, navigate)
-        if (readUri && navigate) {
-            const newId = result?.id ?? draft?.id;
-            if (newId != null) {
-                navigate(readUri.replace(":id", `${newId}`), { replace: true });
+        else {
+            console.log("going to navigate", readUri, navigate)
+            if (readUri && navigate) {
+                const newId = result?.id ?? draft?.id;
+                if (newId != null) {
+                    navigate(readUri.replace(":id", `${newId}`), { replace: true });
+                }
             }
+            return result;
         }
-        return result;
+        // default: navigace na read
+        
     }, [commitNow, draft, navigate, onAfterConfirm, readUri]);
 
     const handleCancel = useCallback(async () => {

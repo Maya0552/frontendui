@@ -65,7 +65,7 @@ export const DeleteButton = ({
             mode={mode}
             mutationAsyncAction={mutationAsyncAction}
             Dialog={Dialog}              // default dáme níže
-            initialItem={item}
+            item={item}
             uriPattern={vectorItemsURI}  // po úspěchu přesměruj na list
             onOk={onOk}
             {...props}
@@ -84,7 +84,7 @@ export const DeleteDialog = ({
     onCancel,
     DefaultContent: DefaultContent_ = DefaultContent,
 }) => {
-    // GeneralDialog očekává "initialItem" + bude volat onOk(draft)
+    // GeneralDialog očekává "item" + bude volat onOk(draft)
     // Draft tady = item, nemění se.
     const [draft] = useState(item);
 
@@ -98,7 +98,7 @@ export const DeleteDialog = ({
             title={title}
             oklabel={oklabel}
             cancellabel={cancellabel}
-            initialItem={draft}
+            item={draft}
             onOk={handleOk_}
             onCancel={onCancel}
             // DefaultContent u delete je jen "read-only"

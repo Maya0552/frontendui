@@ -32,7 +32,7 @@ export const CreateDialog = ({
     oklabel = "Ok",
     cancellabel = "Zrušit",
     DefaultContent: DefaultContent_ = DefaultContent,
-    initialItem,
+    item,
     onOk,
     onCancel,
     children,
@@ -43,7 +43,7 @@ export const CreateDialog = ({
         oklabel={oklabel}
         cancellabel={cancellabel}
         DefaultContent={DefaultContent_}
-        initialItem={initialItem}
+        item={item}
         onOk={onOk}
         onCancel={onCancel}
         {...props}

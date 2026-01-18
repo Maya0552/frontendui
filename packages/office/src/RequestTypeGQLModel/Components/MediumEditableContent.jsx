@@ -1,4 +1,5 @@
 import { Input } from "../../../../_template/src/Base/FormControls/Input"
+import { TextArea } from "../../../../_template/src/Base/FormControls/TextArea"
 
 /**
  * A component that displays medium-level content for an template entity.
@@ -30,6 +31,7 @@ export const MediumEditableContent = ({ item, onChange=(e)=>null, onBlur=(e)=>nu
             {/* {JSON.stringify(item)} */}
             <Input id={"name"} label={"Jméno"} className="form-control" value={item?.name|| "Název"} onChange={onChange} onBlur={onBlur} />
             <Input id={"nameEn"} label={"Anglický název"} className="form-control" value={item?.nameEn|| "Anglický název"} onChange={onChange} onBlur={onBlur} />
+            <TextArea id={"description"} label={"Popis"} className="form-control" value={item?.description|| "Popis"} onChange={onChange} onBlur={onBlur} />
             {children}
         </>
     )

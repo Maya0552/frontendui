@@ -56,6 +56,7 @@ export const UpdateButton = ({
     return <BaseUpdateButton 
         {...props} 
         DefaultContent={DefaultContent_} 
+        Dialog={Dialog}
         mutationAsyncAction={mutationAsyncAction_}
         {...permissions}
     />

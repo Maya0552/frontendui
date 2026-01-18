@@ -29,17 +29,22 @@ export const DeleteLink = ({
 };
 
 export const DeleteButton = ({
+    item,
     mutationAsyncAction=MutationAsyncAction,
     DefaultContent:DefaultContent_=DefaultContent,
+    Dialog=DeleteDialog,
     vectorItemsURI=ListURI,
     ...props 
 }) => {
     return (
         <BaseDeleteButton 
             {...props} 
+            item={item}
+            
             DefaultContent={DefaultContent_} 
             mutationAsyncAction={mutationAsyncAction}
             vectorItemsURI={vectorItemsURI}
+            Dialog={Dialog}
             {...permissions}
         />
     )

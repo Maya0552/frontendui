@@ -35,16 +35,16 @@ export const Attribute = ({ item, label, attribute_name, attribute_value, childr
     const value = children || renderValue(raw);
 
     return (
-        <Row>
+        <Row className="Attribute_Row">
             {label ? (
                 <>
-                    <Col className="col-4">
+                    <Col md={4} xs={12} className="Attribute_Col_Label">
                         <b>{label}</b>
                     </Col>
-                    <Col className="col-8">{value}</Col>
+                    <Col md={8} xs={12} className="Attribute_Col_Value">{value}</Col>
                 </>
             ) : (
-                <Col className="col-12">{value}</Col>
+                <Col md={12} className="Attribute_Col_Value">{value}</Col>
             )}
         </Row>
     );

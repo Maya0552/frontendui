@@ -130,7 +130,7 @@ export const EntityLookup = ({
         <Input {...props} 
             id={"__phrase"} 
             onChange={handleChange} 
-            placeholder="Napiště alespoň 3 znaky" 
+            placeholder="Napište alespoň 3 znaky" 
             value={value_?.fullname || value_?.name}
             reset={value_}
             // defaultValue={value_?.name}
