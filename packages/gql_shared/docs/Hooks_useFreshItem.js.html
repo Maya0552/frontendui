@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Hooks/useFreshItem.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Hooks/useFreshItem.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/* eslint-disable no-unused-vars */
+
+import { useEffect, useState } from "react"
+import { useDispatch, useSelector } from "react-redux"
+
+
+/**
+ * A custom React hook to retrieve a fresh item from the Redux store and optionally fetch updated data using an asynchronous action.
+ * 
+ * @param {Object} queryVariables - An object containing the `id` of the item to fetch and other query variables.
+ * @param {string} queryVariables.id - The unique identifier of the item to retrieve.
+ * @param {Function} AsyncAction - An asynchronous Redux action that fetches updated data. It should return a Promise resolving to the data in JSON format.
+ * 
+ * @returns {[Object, Promise, Object]} A tuple containing:
+ * - The current item from the Redux store (or `undefined` if it doesn't exist).
+ * - A Promise representing the asynchronous fetch operation.
+ * - The current state of the fetch operation, including:
+ *   - `resultPromise`: The current Promise being processed.
+ *   - `errors`: Any errors returned by the asynchronous action.
+ *   - `data`: The fetched data from the action.
+ *   - `json`: The full response object from the asynchronous action.
+ *   - `loading`: A boolean indicating if the fetch operation is in progress.
+ *   - `done`: A boolean indicating if the fetch operation has completed.
+ * 
+ * @throws {Error} If the Redux store's state does not contain an `items` attribute.
+ * 
+ * @example
+ * // Usage with a Redux asynchronous action
+ * const AsyncAction = (variables) => async (dispatch) => {
+ *     const response = await fetch('/api/items', { method: 'POST', body: JSON.stringify(variables) });
+ *     const json = await response.json();
+ *     return json;
+ * };
+ * 
+ * const MyComponent = () => {
+ *     const [item, resultPromise, state] = useFreshItem({ id: '123', filter: 'active' }, AsyncAction);
+ * 
+ *     useEffect(() => {
+ *         resultPromise.then(() => {
+ *             console.log("Fetch complete:", state);
+ *         });
+ *     }, [resultPromise]);
+ * 
+ *     return (
+ *         &lt;div>
+ *             {state.loading &amp;&amp; &lt;p>Loading...&lt;/p>}
+ *             {state.errors &amp;&amp; &lt;p>Error: {state.errors}&lt;/p>}
+ *             {item &amp;&amp; &lt;p>Item: {item.name}&lt;/p>}
+ *         &lt;/div>
+ *     );
+ * };
+ */
+export const useFreshItem = ({id, ...queryVariables}, AsyncAction) => {
+    //const id = oldItemWithId.id
+    // console.log("useFreshItem", id)
+    
+    const dispatch = useDispatch()
+    const items = useSelector(state => state["items"])
+    if (!items) {
+        throw Error("bad use of store and useFreshItem hook, checks that store state has items attribute")
+    }
+    const result = items[id]
+
+    const [_state, _setState] = useState({
+        resultPromise: new Promise(()=>{}),
+        errors: null,
+        data: null,
+        json: null,
+        loading: false,
+        done: false
+    })
+
+    useEffect(
+        () => {
+            let resultPromise = null
+            const fetcher = async () => {
+                const dispatchResult = await dispatch(AsyncAction({id, ...queryVariables}), null)
+                const {data, errors} = dispatchResult
+                const newState = {
+                    resultPromise: resultPromise,
+                    errors, data, json: dispatchResult, loading: false, done: true}
+                _setState(newState)
+                return dispatchResult
+            }
+            resultPromise = fetcher()
+            const newState = {
+                resultPromise: resultPromise,
+                errors: null,
+                data: null,
+                json: null,
+                loading: true,
+                done: false
+            }
+            _setState(newState)
+        }
+        ,[id, AsyncAction, dispatch] // this is ok, if ...queryVariables change, useEffect will not happen which is we wanted
+    )
+    //console.log("useFresh", _state)
+    return [result, _state.resultPromise, _state]
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-shared.html">shared</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AppProvider">AppProvider</a></li><li><a href="global.html#CheckGQLError">CheckGQLError</a></li><li><a href="global.html#CreateAsyncQueryValidator">CreateAsyncQueryValidator</a></li><li><a href="global.html#CreateAsyncQueryValidator2">CreateAsyncQueryValidator2</a></li><li><a href="global.html#CreateFetchQuery">CreateFetchQuery</a></li><li><a href="global.html#Msg">Msg</a></li><li><a href="global.html#MsgAddAction">MsgAddAction</a></li><li><a href="global.html#MsgFlashAction">MsgFlashAction</a></li><li><a href="global.html#MsgSlice">MsgSlice</a></li><li><a href="global.html#Msgs">Msgs</a></li><li><a href="global.html#authorizedFetch2">authorizedFetch2</a></li><li><a href="global.html#createAsyncGraphQLAction">createAsyncGraphQLAction</a></li><li><a href="global.html#processVectorAttributeFromGraphQLResult">processVectorAttributeFromGraphQLResult</a></li><li><a href="global.html#updateItemsFromGraphQLResult">updateItemsFromGraphQLResult</a></li><li><a href="global.html#useFreshItem">useFreshItem</a></li><li><a href="global.html#usePath">usePath</a></li><li><a href="global.html#uuid">uuid</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Dec 09 2024 22:07:22 GMT+0100 (středoevropský standardní čas)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+/* container-based "Row" */
+.cq-row {
+    container-type: inline-size;               /* klíčové – aktivuje @container */
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 12), minmax(0, 1fr));
+    gap: var(--gap, 1rem);
+}
+
+/* container-based "Col" – výchozí span podle xs */
+.cq-col {
+    grid-column: span var(--span-xs, 12);
+}
+
+/* Breakpointy podle ŠÍŘKY KONTEJNERU (ne okna) – podobné Bootstrapu */
+@container (min-width: 576px) {   /* sm */
+    .cq-col { grid-column: span var(--span-sm, var(--span-xs, 12)); }
+}
+@container (min-width: 768px) {   /* md */
+    .cq-col { grid-column: span var(--span-md, var(--span-sm, var(--span-xs, 12))); }
+}
+@container (min-width: 992px) {   /* lg */
+    .cq-col { grid-column: span var(--span-lg, var(--span-md, var(--span-sm, var(--span-xs, 12)))); }
+}
+@container (min-width: 1200px) {  /* xl */
+    .cq-col { grid-column: span var(--span-xl, var(--span-lg, var(--span-md, var(--span-sm, var(--span-xs, 12))))); }
+}
+@container (min-width: 1400px) {  /* xxl */
+    .cq-col { grid-column: span var(--span-xxl, var(--span-xl, var(--span-lg, var(--span-md, var(--span-sm, var(--span-xs, 12)))))); }
+}

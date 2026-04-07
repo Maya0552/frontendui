@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Store/keyedreducers.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Store/keyedreducers.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import { createSlice } from '@reduxjs/toolkit';
+
+/**
+ * Shared module for item management.
+ * Provides utility functions and a Redux slice for managing items in a normalized state.
+ * @module shared
+ */
+
+/**
+ * Adds an item to the state. If the item doesn't have an `id`, it generates one.
+ *
+ * @param {Object} state - The current state, typically a normalized object with items indexed by their IDs.
+ * @param {Object} action - The action containing the item to add.
+ * @param {Object} action.payload - The item to be added.
+ * @returns {Object} The updated state with the new item added.
+ */
+export const CreateItem = (state, action) => {
+    const item = action.payload;
+    const id = item.id || crypto.randomUUID();
+    if (!item.id) {
+        item.id = id;
+    }
+
+    state[id] = item
+    return state
+}
+
+/**
+ * Deletes an item from the state by its `id`.
+ *
+ * @param {Object} state - The current state.
+ * @param {Object} action - The action containing the item to delete.
+ * @param {Object} action.payload - The item to be deleted.
+ * @returns {Object} The updated state with the item removed.
+ */
+export const DeleteItem = (state, action) => {
+    const item = action.payload;
+    delete state[item.id];
+
+    return state;
+};
+
+/**
+ * Replaces an item in the state with the given item.
+ *
+ * @param {Object} state - The current state.
+ * @param {Object} action - The action containing the new item.
+ * @param {Object} action.payload - The new item to replace the existing one.
+ * @returns {Object} The updated state with the item replaced.
+ */
+export const ReplaceItem = (state, action) => {
+    const newItem = action.payload;
+    state[newItem.id] = newItem;
+
+    return state;
+};
+
+/**
+ * Updates an existing item in the state by merging its properties with new properties.
+ *
+ * @param {Object} state - The current state.
+ * @param {Object} action - The action containing the item to update.
+ * @param {Object} action.payload - The updated item.
+ * @returns {Object} The updated state with the modified item.
+ */
+export const UpdateItem = (state, action) => {
+    const newItem = action.payload;
+    const oldItem = state[newItem.id];
+    state[newItem.id] = { ...oldItem, ...newItem };
+
+    return state;
+};
+
+/**
+ * Updates a sub-array attribute (vector) of an item in the state.
+ * Sub-items with a `__typename` are also merged into the state for normalization.
+ *
+ * @param {Object} state - The current state.
+ * @param {Object} action - The action containing the item and vector to update.
+ * @param {Object} action.payload - The payload of the action.
+ * @param {Object} action.payload.item - The item containing the sub-array to update.
+ * @param {string} action.payload.vectorname - The name of the sub-array attribute to update.
+ * @returns {Object} The updated state.
+ */
+export const UpdateSubVector = (state, action) => {
+    const { item, vectorname } = action.payload;
+    const oldItem = state[item.id];
+    const subItems = vectorname in oldItem ? oldItem[vectorname] : [];
+    const indexedSubItems = {};
+
+    // Index existing sub-items by their IDs
+    for (let i of subItems) {
+        indexedSubItems[i.id] = i;
+    }
+
+    // Update or add sub-items
+    for (let i of item[vectorname]) {
+        if (i?.__typename) {
+            state[i.id] = { ...state[i.id], ...i };
+        }
+        const existing = indexedSubItems[i.id] || {};
+        indexedSubItems[i.id] = { ...existing, ...i };
+    }
+
+    oldItem[vectorname] = Object.values(indexedSubItems);
+
+    return state;
+};
+
+/**
+ * Updates a scalar attribute of an item in the state.
+ * If the scalar is a nested item with a `__typename`, it is also normalized into the state.
+ *
+ * @param {Object} state - The current state.
+ * @param {Object} action - The action containing the item and scalar to update.
+ * @param {Object} action.payload - The payload of the action.
+ * @param {Object} action.payload.item - The item containing the scalar to update.
+ * @param {string} action.payload.scalarname - The name of the scalar attribute to update.
+ * @returns {Object} The updated state.
+ */
+export const UpdateSubScalar = (state, action) => {
+    const { item, scalarname } = action.payload;
+    const oldItem = state[item.id];
+    const newSubitem = item[scalarname];
+    oldItem[scalarname] = { ...oldItem[scalarname], ...newSubitem };
+    if (newSubitem?.__typename) {
+        state[newSubitem.id] = { ...state[newSubitem.id], ...newSubitem };
+    }
+    return state;
+};
+
+// Exported action names for Redux slice
+const item_add = CreateItem;
+const item_update = UpdateItem;
+const item_replace = ReplaceItem;
+const item_delete = DeleteItem;
+const item_updateAttributeScalar = UpdateSubScalar;
+const item_updateAttributeVector = UpdateSubVector;
+
+/**
+ * Redux slice for managing items in a normalized state.
+ */
+export const ItemSlice = createSlice({
+    name: 'items',
+    initialState: {},
+    reducers: {
+        item_add,
+        item_update,
+        item_replace,
+        item_delete,
+        item_updateAttributeScalar,
+        item_updateAttributeVector,
+    },
+});
+
+export const ItemReducer = ItemSlice.reducer;
+export const ItemActions = ItemSlice.actions;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-shared.html">shared</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AppProvider">AppProvider</a></li><li><a href="global.html#CheckGQLError">CheckGQLError</a></li><li><a href="global.html#CreateAsyncQueryValidator">CreateAsyncQueryValidator</a></li><li><a href="global.html#CreateAsyncQueryValidator2">CreateAsyncQueryValidator2</a></li><li><a href="global.html#CreateFetchQuery">CreateFetchQuery</a></li><li><a href="global.html#Msg">Msg</a></li><li><a href="global.html#MsgAddAction">MsgAddAction</a></li><li><a href="global.html#MsgFlashAction">MsgFlashAction</a></li><li><a href="global.html#MsgSlice">MsgSlice</a></li><li><a href="global.html#Msgs">Msgs</a></li><li><a href="global.html#authorizedFetch2">authorizedFetch2</a></li><li><a href="global.html#createAsyncGraphQLAction">createAsyncGraphQLAction</a></li><li><a href="global.html#processVectorAttributeFromGraphQLResult">processVectorAttributeFromGraphQLResult</a></li><li><a href="global.html#updateItemsFromGraphQLResult">updateItemsFromGraphQLResult</a></li><li><a href="global.html#useFreshItem">useFreshItem</a></li><li><a href="global.html#usePath">usePath</a></li><li><a href="global.html#uuid">uuid</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Mon Dec 09 2024 22:07:22 GMT+0100 (středoevropský standardní čas)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

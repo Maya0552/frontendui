@@ -1,0 +1,18 @@
+{
+    "manifest_version": 2,
+    "name": "UOISAssistent",
+    "version": "1.0",
+  
+    "description": "Helps users to make some analysis.",
+  
+    "icons": {
+      "48": "icons/border-48.png"
+    },
+  
+    "content_scripts": [
+      {
+        "matches": ["*://apl.unob.cz/*"],
+        "js": ["index.js"]
+      }
+    ]
+  }

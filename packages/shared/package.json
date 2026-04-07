@@ -1,0 +1,34 @@
+{
+  "name": "@hrbolek/uoisfrontend-shared",
+  "version": "0.5.0",
+  "main": "src/index.js",
+
+  "exports_": {
+    ".": {
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.cjs.js"
+    }
+  },
+
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+  
+    "build": "vite build",
+    "prepublishOnly": "npm run build",
+    "docs": "jsdoc -c jsdoc.json --verbose"
+  },
+
+  "author": "",
+  "license": "ISC",
+  "description": "",
+
+  "dependencies": {
+    "bootstrap-icons": "1.11.3",
+    "react-bootstrap-icons": "^1.11.5",
+    "@hrbolek/uoisfrontend-gql-shared": "*"
+  },
+
+  "peerDependencies": {
+    "react": "^18.0.0"
+  }
+}

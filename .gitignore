@@ -1,24 +1,58 @@
+# Node.js dependencies
+/node_modules
+**/node_modules
+
+# Vite-specific build output
+/dist
+**/dist
+/.vite
+**/.vite
+
 # Logs
-logs
-*.log
 npm-debug.log*
+pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# OS/Editor-specific files
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.bak
+*.swp
+*.swo
+
+# Build artifacts
+/build
+/out
+**/build
+**/out
+
+# Cache
+/.cache
+**/.cache
+/.parcel-cache
+/.next
+.cache-loader
+*.lock
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Workspaces
+.pnpm-debug.log*
+.pnpm-lock.yaml
+**/.turbo
+**/.nx
+
+# Package manager lock files (if using one)
+yarn.lock
+package-lock.json

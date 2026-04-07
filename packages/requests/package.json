@@ -1,0 +1,22 @@
+{
+  "name": "@hrbolek/uoisfrontend-requests",
+  "version": "0.5.0",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "react-bootstrap-icons": "^1.11.5",
+    "react-router": "^7.0.2",
+    "react-redux": "^9.2.0",
+
+    "@hello-pangea/dnd": "^18.0.1",
+
+    "@hrbolek/uoisfrontend-shared": "*",
+    "@hrbolek/uoisfrontend-gql-shared": "*",
+    "@hrbolek/uoisfrontend-ug": "*"
+  }
+}
