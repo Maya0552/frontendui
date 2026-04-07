@@ -4,7 +4,7 @@ import { createAsyncGraphQLAction2 } from "../../../../dynamic/src/Core/createAs
 
 const ReadQueryStr = `
 query semesterById($id: UUID!) {
-  semesterTypeById(id: $id) {
+  semesterById(id: $id) {
     ...Large
   }
 }

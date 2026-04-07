@@ -93,4 +93,11 @@ import { Link } from "./Link"
 //     )
 // }
 
-export { MediumContent } from "../../../../_template/src/Base/Components/MediumContent"
+import { MediumContent as MediumContent_ } from "../../../../_template/src/Base/Components/MediumContent"
+
+export const MediumContent = ({item}) => {
+    return (<>
+    Fantomas
+        <MediumContent_ item={item} />
+    </>)
+}

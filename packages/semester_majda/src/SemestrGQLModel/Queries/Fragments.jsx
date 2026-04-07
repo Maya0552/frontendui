@@ -1,7 +1,7 @@
 import { createQueryStrLazy } from "@hrbolek/uoisfrontend-gql-shared"
 
 const LinkFragmentStr = `
-fragment Link on RoleTypeGQLModel {
+fragment Link on SemesterGQLModel {
   __typename
   id
   lastchange
@@ -20,7 +20,7 @@ subjectId
 `
 
 const MediumFragmentStr = `
-fragment Medium on RoleTypeGQLModel {
+fragment Medium on SemesterGQLModel {
   ...Link
   rbacobject {
     ...RBRoles
@@ -29,7 +29,7 @@ fragment Medium on RoleTypeGQLModel {
 `
 
 const LargeFragmentStr = `
-fragment Large on RoleTypeGQLModel {
+fragment Large on SemesterGQLModel {
   ...Medium
   topics {
     __typename
