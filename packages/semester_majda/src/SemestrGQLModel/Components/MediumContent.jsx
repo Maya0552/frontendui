@@ -98,7 +98,7 @@ import {Attribute, formatDateTime} from "../../../../_template/src/Base/Componen
 
 //export { MediumContent } from "../../../../_template/src/Base/Components/MediumContent"
 
-export const MediumContent = ({ item, children}) => {
+/*export const MediumContent = ({ item, children}) => {
     return (
         <>
             <Attribute label="Id">
@@ -123,4 +123,43 @@ export const MediumContent = ({ item, children}) => {
         </MediumContent_>
 </>
 )
+}*/
+
+export const MediumContent = ({ item, children }) => {
+    return (
+        
+        <>
+            <Attribute label="Id">
+                <Link item={item}>{item?.id || "Data error"}</Link>
+            </Attribute>
+
+            <Attribute label="Order">
+                {item?.order ?? "—"}
+            </Attribute>
+
+            <Attribute label="Credits">
+                {item?.credits ?? "—"}
+            </Attribute>
+
+            <Attribute label="Mandatory">
+                {item?.mandatory === true ? "Ano" : item?.mandatory === false ? "Ne" : "—"}
+            </Attribute>
+
+            <Attribute label="Subject ID">
+                {item?.subjectId ?? "—"}
+            </Attribute>
+
+            <Attribute label="Classification type ID">
+                {item?.classificationtypeId ?? "—"}
+            </Attribute>
+
+            <Attribute label="Last changed">
+                {item?.lastchange ? formatDateTime(item.lastchange) : "—"}
+            </Attribute>
+
+            <hr />
+            {children}
+            
+        </>
+    )
 }
