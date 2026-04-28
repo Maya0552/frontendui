@@ -14,6 +14,11 @@ order
 mandatory
 credits
 classificationtypeId
+classificationtype{
+  __typename
+  id
+  name
+}
 subjectId  
   
 }
